@@ -56,7 +56,7 @@ export default function FormIscrizione({ eventoId }: { eventoId: string }) {
         </div>
       </div>
       {stato === "errore" && <p className="text-segnale font-semibold" role="alert">Errore: {errore}</p>}
-      <button type="submit" className="btn btn-blu" disabled={stato === "invio"}>
+      <button type="submit" className="btn btn-accento" disabled={stato === "invio"}>
         {stato === "invio" ? "Invio…" : "Iscrivimi all'evento"}
       </button>
     </form>

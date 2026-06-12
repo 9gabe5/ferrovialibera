@@ -120,7 +120,7 @@ export default function Admin() {
   if (!autenticato) {
     return (
       <div className="max-w-sm mx-auto px-4 py-24">
-        <h1 className="font-display font-black text-2xl text-blu mb-6">Cabina di guida 🔐</h1>
+        <h1 className="font-display font-black text-2xl text-accento mb-6">Cabina di guida 🔐</h1>
         <form onSubmit={login} className="space-y-4">
           <input
             className="input"
@@ -131,7 +131,7 @@ export default function Admin() {
             autoFocus
           />
           {erroreLogin && <p className="text-segnale font-semibold">{erroreLogin}</p>}
-          <button className="btn btn-blu w-full" type="submit">Entra</button>
+          <button className="btn btn-accento w-full" type="submit">Entra</button>
         </form>
       </div>
     );
@@ -142,7 +142,7 @@ export default function Admin() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="font-display font-black text-3xl text-blu mb-6">Cabina di guida</h1>
+      <h1 className="font-display font-black text-3xl text-accento mb-6">Cabina di guida</h1>
 
       <div className="flex gap-2 mb-8 flex-wrap">
         {([
@@ -153,7 +153,7 @@ export default function Admin() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`btn text-xs ${tab === t ? "btn-blu" : "btn-bordo"}`}
+            className={`btn text-xs ${tab === t ? "btn-accento" : "btn-bordo"}`}
           >
             {label}
           </button>
@@ -206,13 +206,13 @@ export default function Admin() {
         <section>
           <div className="flex justify-between items-center mb-4">
             <p className="text-pietrisco text-sm">{eventi.length} eventi</p>
-            <button className="btn btn-blu text-xs" onClick={() => setMostraFormEvento(!mostraFormEvento)}>
+            <button className="btn btn-accento text-xs" onClick={() => setMostraFormEvento(!mostraFormEvento)}>
               {mostraFormEvento ? "Annulla" : "+ Nuovo evento"}
             </button>
           </div>
 
           {mostraFormEvento && (
-            <form onSubmit={salvaEvento} className="border-2 border-blu bg-white p-5 mb-6 grid gap-4 sm:grid-cols-2">
+            <form onSubmit={salvaEvento} className="border-2 border-accento bg-white p-5 mb-6 grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2">
                 <label className="label">Titolo *</label>
                 <input className="input" name="titolo" required />
@@ -243,7 +243,7 @@ export default function Admin() {
               </div>
               <label className="flex gap-2 items-center"><input type="checkbox" name="registrazione_aperta" defaultChecked /> Iscrizioni aperte</label>
               <label className="flex gap-2 items-center"><input type="checkbox" name="pubblicato" defaultChecked /> Pubblicato</label>
-              <button className="btn btn-blu sm:col-span-2" type="submit">Crea evento</button>
+              <button className="btn btn-accento sm:col-span-2" type="submit">Crea evento</button>
             </form>
           )}
 
@@ -301,10 +301,10 @@ export default function Admin() {
       {tab === "messaggi" && (
         <section className="space-y-3">
           {messaggi.map((m) => (
-            <article key={m.id} className={`border-2 p-4 bg-white ${m.letto ? "border-gray-200 opacity-70" : "border-blu"}`}>
+            <article key={m.id} className={`border-2 p-4 bg-white ${m.letto ? "border-gray-200 opacity-70" : "border-accento"}`}>
               <div className="flex justify-between items-start gap-2">
                 <p className="font-display font-bold text-sm">
-                  {m.nome || "Anonimə"} · <a href={`mailto:${m.email}`} className="text-blu underline">{m.email}</a>
+                  {m.nome || "Anonimə"} · <a href={`mailto:${m.email}`} className="text-accento underline">{m.email}</a>
                   <span className="text-pietrisco font-mono font-normal text-xs"> · {dt(m.created_at)}</span>
                 </p>
                 <button className="btn text-xs btn-bordo" onClick={() => segnaLetto(m.id, !m.letto)}>

@@ -26,21 +26,21 @@ export default async function Home() {
       {/* HERO: cartello di stazione */}
       <section className="cartello">
         <div className="max-w-6xl mx-auto px-4 py-20 md:py-28">
-          <p className="font-mono text-sm normal-case tracking-normal text-blue-200 mb-4">
+          <p className="font-mono text-sm normal-case tracking-normal text-white/70 mb-4">
             Associazione di Ferrovierə LGBTQ+ · dal Pride Month 2023
           </p>
           <h1 className="text-4xl md:text-6xl leading-tight">
             Per una ferrovia<br />libera da discriminazioni.
           </h1>
-          <p className="mt-6 max-w-2xl normal-case tracking-normal font-body font-normal text-blue-100 text-lg">
+          <p className="mt-6 max-w-2xl normal-case tracking-normal font-body font-normal text-white/85 text-lg">
             Lavoriamo per un settore ferroviario pienamente inclusivo, dove ogni persona
             possa essere sé stessa — in cabina, in officina, in stazione e ovunque corra un binario.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/tesseramento" className="btn bg-white text-blu hover:bg-blue-100">
+            <Link href="/tesseramento" className="btn bg-white text-accento hover:bg-white/90">
               Unisciti a noi
             </Link>
-            <Link href="/eventi" className="btn border-2 border-white text-white hover:bg-white hover:text-blu">
+            <Link href="/eventi" className="btn border-2 border-white text-white hover:bg-white hover:text-accento">
               Prossimi eventi
             </Link>
           </div>
@@ -51,7 +51,7 @@ export default async function Home() {
       {/* CHI SIAMO */}
       <section className="max-w-6xl mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 items-center">
         <div>
-          <h2 className="font-display font-black text-3xl text-blu mb-4">Chi siamo</h2>
+          <h2 className="font-display font-black text-3xl text-accento mb-4">Chi siamo</h2>
           <p className="text-lg leading-relaxed">
             Nel giugno del 2023, durante il Pride Month, FerroViaLibera è nata con l&apos;obiettivo
             di promuovere l&apos;uguaglianza e i diritti LGBTQ+ nel settore ferroviario. Attraverso
@@ -67,7 +67,7 @@ export default async function Home() {
         <img
           src="https://static.wixstatic.com/media/a7f111_6807dc9654da477caad3dff6c3019ddd~mv2.jpeg"
           alt="Il gruppo di FerroViaLibera in stazione con la bandiera arcobaleno"
-          className="w-full object-cover border-4 border-blu"
+          className="w-full object-cover border-4 border-accento"
         />
       </section>
 
@@ -104,14 +104,14 @@ export default async function Home() {
 
       {/* CTA TESSERAMENTO */}
       <section className="max-w-6xl mx-auto px-4 py-16 text-center">
-        <h2 className="font-display font-black text-3xl md:text-4xl text-blu">
+        <h2 className="font-display font-black text-3xl md:text-4xl text-accento">
           Unisciti alla nostra causa
         </h2>
         <p className="mt-3 text-lg text-pietrisco max-w-xl mx-auto">
           Cambiare il mondo in un luogo migliore inizia da noi stessi.
         </p>
         <div className="mt-6 flex justify-center gap-3 flex-wrap">
-          <Link href="/tesseramento" className="btn btn-blu">Tesseramento 2026</Link>
+          <Link href="/tesseramento" className="btn btn-accento">Tesseramento 2026</Link>
           <Link href="/rinnovo" className="btn btn-bordo">Rinnova la tessera</Link>
         </div>
       </section>

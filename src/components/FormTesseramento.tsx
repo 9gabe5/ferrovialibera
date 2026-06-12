@@ -110,21 +110,21 @@ export default function FormTesseramento({ tipo }: { tipo: "nuovo" | "rinnovo" }
           <input type="checkbox" name="accetto_privacy" required className="mt-1" />
           <span>
             Acconsento al trattamento dei miei dati personali secondo la{" "}
-            <a href="https://drive.google.com/file/d/1LX6OfjTCzBjUQJjdhizoH2LQAa79qtC6/view" className="underline text-blu">Privacy Policy</a>
+            <a href="https://drive.google.com/file/d/1LX6OfjTCzBjUQJjdhizoH2LQAa79qtC6/view" className="underline text-accento">Privacy Policy</a>
           </span>
         </label>
         <label className="flex gap-2 items-start font-medium">
           <input type="checkbox" name="accetto_statuto" required className="mt-1" />
-          <span>Ho letto e accetto lo <a href="/statuto" className="underline text-blu">Statuto</a></span>
+          <span>Ho letto e accetto lo <a href="/statuto" className="underline text-accento">Statuto</a></span>
         </label>
       </fieldset>
 
-      <div className="bg-blue-50 border-2 border-blu p-4 space-y-3">
-        <p className="font-display font-bold text-blu">Quota annuale associativa 2026: €{QUOTA}</p>
+      <div className="bg-gray-50 border-2 border-accento p-4 space-y-3">
+        <p className="font-display font-bold text-accento">Quota annuale associativa 2026: €{QUOTA}</p>
         <div className="text-sm space-y-2">
           <p>
             <strong>Con PayPal</strong> (lasciare la dicitura &quot;Amici e Familiari&quot;!):{" "}
-            <a href={PAYPAL} className="underline text-blu break-all">{PAYPAL}</a>
+            <a href={PAYPAL} className="underline text-accento break-all">{PAYPAL}</a>
           </p>
           <p>
             <strong>Con bonifico</strong> all&apos;IBAN intestato a FerroViaLibera APS:{" "}
@@ -148,7 +148,7 @@ export default function FormTesseramento({ tipo }: { tipo: "nuovo" | "rinnovo" }
         <p className="text-segnale font-semibold" role="alert">Errore: {errore}. Riprova o scrivici a info@ferrovialibera.it</p>
       )}
 
-      <button type="submit" className="btn btn-blu w-full sm:w-auto" disabled={stato === "invio"}>
+      <button type="submit" className="btn btn-accento w-full sm:w-auto" disabled={stato === "invio"}>
         {stato === "invio" ? "Invio in corso…" : tipo === "nuovo" ? "Invia richiesta di tesseramento" : "Invia richiesta di rinnovo"}
       </button>
     </form>

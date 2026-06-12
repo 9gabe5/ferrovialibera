@@ -35,7 +35,7 @@ export default async function DettaglioEvento({ params }: { params: { id: string
 
       <section className="max-w-4xl mx-auto px-4 py-12 space-y-10">
         {e.immagine_url && (
-          <img src={e.immagine_url} alt="" className="w-full max-h-96 object-cover border-4 border-blu" />
+          <img src={e.immagine_url} alt="" className="w-full max-h-96 object-cover border-4 border-accento" />
         )}
         {e.descrizione && <p className="text-lg leading-relaxed whitespace-pre-line">{e.descrizione}</p>}
         {e.link_esterno && (
@@ -43,8 +43,8 @@ export default async function DettaglioEvento({ params }: { params: { id: string
         )}
 
         {e.registrazione_aperta ? (
-          <div className="bg-white border-2 border-blu p-6">
-            <h2 className="font-display font-black text-2xl text-blu mb-4">Iscriviti</h2>
+          <div className="bg-white border-2 border-accento p-6">
+            <h2 className="font-display font-black text-2xl text-accento mb-4">Iscriviti</h2>
             <FormIscrizione eventoId={e.id} />
           </div>
         ) : (

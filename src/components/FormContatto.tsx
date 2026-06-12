@@ -51,7 +51,7 @@ export default function FormContatto() {
         <textarea className="input" id="c-msg" name="messaggio" rows={5} required />
       </div>
       {stato === "errore" && <p className="text-segnale font-semibold" role="alert">Errore: {errore}</p>}
-      <button type="submit" className="btn btn-blu" disabled={stato === "invio"}>
+      <button type="submit" className="btn btn-accento" disabled={stato === "invio"}>
         {stato === "invio" ? "Invio…" : "Invia messaggio"}
       </button>
     </form>

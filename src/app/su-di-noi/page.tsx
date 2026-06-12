@@ -1,5 +1,24 @@
 export const metadata = { title: "Su di noi | FerroViaLibera" };
 
+// Quando hai i file, basta incollare qui l'URL (o il percorso /immagini/...)
+const LOGO_NUOVO: string | null = null;
+
+const direttivo: { nome: string; ruolo: string; foto: string | null }[] = [
+  { nome: "Gabriele Roscini", ruolo: "Presidente e Fondatore", foto: null },
+  { nome: "Andrea Ruggiero", ruolo: "Vice Presidente", foto: null },
+  { nome: "Mohammad Lamloum", ruolo: "Tesoriere", foto: null },
+];
+
+function BoxFoto({ alt }: { alt: string }) {
+  return (
+    <div className="w-full aspect-[4/3] bg-latte border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-pietrisco">
+      <span className="text-3xl" aria-hidden="true">📷</span>
+      <span className="text-sm mt-1">Foto in arrivo</span>
+      <span className="sr-only">{alt}</span>
+    </div>
+  );
+}
+
 export default function SuDiNoi() {
   return (
     <>
@@ -11,13 +30,18 @@ export default function SuDiNoi() {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 py-14 grid gap-10 md:grid-cols-2 items-center">
-        <img
-          src="https://static.wixstatic.com/media/a7f111_d321721518174939b6fdbd07540b2c80~mv2.jpg"
-          alt="FerroViaLibera al Pride"
-          className="w-full object-cover border-4 border-blu"
-        />
+        <div className="flex items-center justify-center bg-latte border-2 border-accento p-8 aspect-[4/3]">
+          {LOGO_NUOVO ? (
+            <img src={LOGO_NUOVO} alt="Logo FerroViaLibera" className="max-h-full max-w-full object-contain" />
+          ) : (
+            <div className="text-center text-pietrisco">
+              <span className="block font-marchio font-extrabold text-2xl text-accento">FerroViaLibera</span>
+              <span className="text-sm">Nuovo logo in arrivo</span>
+            </div>
+          )}
+        </div>
         <div>
-          <h2 className="font-display font-black text-3xl text-blu mb-4">La nostra storia</h2>
+          <h2 className="font-display font-black text-3xl text-accento mb-4">La nostra storia</h2>
           <p className="text-lg leading-relaxed">
             Nel giugno del 2023, durante il Pride Month, FerroViaLibera è nata con l&apos;obiettivo di
             promuovere l&apos;uguaglianza e i diritti LGBTQ+ nel settore ferroviario. Attraverso incontri,
@@ -30,20 +54,21 @@ export default function SuDiNoi() {
 
       <section className="bg-white border-y border-gray-200 py-14">
         <div className="max-w-6xl mx-auto px-4">
-          <h2 className="font-display font-black text-3xl text-blu mb-8">Il Direttivo</h2>
+          <h2 className="font-display font-black text-3xl text-accento mb-8">Il Direttivo</h2>
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="border border-gray-200 bg-latte">
-              <img
-                src="https://static.wixstatic.com/media/a7f111_091d5a0dbb814ca2bb94a742f84cb3af~mv2.jpeg"
-                alt="Gabriele Roscini"
-                className="w-full aspect-[4/3] object-cover"
-              />
-              <div className="p-4">
-                <p className="font-display font-bold text-lg">Gabriele Roscini</p>
-                <p className="text-pietrisco text-sm">Fondatore e Presidente</p>
+            {direttivo.map((m) => (
+              <div key={m.nome} className="border border-gray-200 bg-latte">
+                {m.foto ? (
+                  <img src={m.foto} alt={m.nome} className="w-full aspect-[4/3] object-cover" />
+                ) : (
+                  <BoxFoto alt={m.nome} />
+                )}
+                <div className="p-4">
+                  <p className="font-display font-bold text-lg">{m.nome}</p>
+                  <p className="text-pietrisco text-sm">{m.ruolo}</p>
+                </div>
               </div>
-            </div>
-            {/* Aggiungi qui le altre persone del Direttivo */}
+            ))}
           </div>
         </div>
       </section>

@@ -17,23 +17,23 @@ body {
 
 /* Cartello di stazione */
 .cartello {
-  @apply bg-blu text-white font-display font-bold uppercase tracking-wide;
+  @apply bg-accento text-white font-display font-bold uppercase tracking-wide;
 }
 
 /* Focus visibile ovunque (accessibilità) */
 :focus-visible {
-  outline: 3px solid #16356B;
+  outline: 3px solid #C01C7C;
   outline-offset: 2px;
 }
 
 .btn {
   @apply inline-block px-6 py-3 font-display font-bold uppercase tracking-wide text-sm transition-colors;
 }
-.btn-blu { @apply bg-blu text-white hover:bg-blu-scuro; }
-.btn-bordo { @apply border-2 border-blu text-blu hover:bg-blu hover:text-white; }
+.btn-accento { @apply bg-accento text-white hover:bg-accento-scuro; }
+.btn-bordo { @apply border-2 border-accento text-accento hover:bg-accento hover:text-white; }
 
 .input {
-  @apply w-full border-2 border-gray-300 bg-white px-4 py-3 text-base focus:border-blu focus:outline-none;
+  @apply w-full border-2 border-gray-300 bg-white px-4 py-3 text-base focus:border-accento focus:outline-none;
 }
 .label { @apply block font-display font-semibold text-sm uppercase tracking-wide mb-1; }
 

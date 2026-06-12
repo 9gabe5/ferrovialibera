@@ -19,7 +19,7 @@ export default function Nav() {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <nav className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16" aria-label="Principale">
-        <Link href="/" className="flex items-center gap-2 font-display font-black text-xl text-blu" onClick={() => setAperto(false)}>
+        <Link href="/" className="flex items-center gap-2 font-marchio font-extrabold text-2xl text-accento tracking-tight" onClick={() => setAperto(false)}>
           <img src="https://static.wixstatic.com/media/a7f111_acf09c3e80b94ac9ac8a7c1abf88d7ec~mv2.png" alt="" width={40} height={40} />
           FerroViaLibera
         </Link>
@@ -29,14 +29,14 @@ export default function Nav() {
             <li key={v.href}>
               <Link
                 href={v.href}
-                className={`px-3 py-2 font-display font-semibold text-sm uppercase tracking-wide hover:text-blu ${path === v.href ? "text-blu border-b-2 border-blu" : "text-antracite"}`}
+                className={`px-3 py-2 font-display font-semibold text-sm uppercase tracking-wide hover:text-accento ${path === v.href ? "text-accento border-b-2 border-accento" : "text-antracite"}`}
               >
                 {v.label}
               </Link>
             </li>
           ))}
           <li className="ml-2">
-            <Link href="/tesseramento" className="btn btn-blu text-xs">Tesserati</Link>
+            <Link href="/tesseramento" className="btn btn-accento text-xs">Tesserati</Link>
           </li>
         </ul>
 
@@ -66,7 +66,7 @@ export default function Nav() {
             </li>
           ))}
           <li>
-            <Link href="/tesseramento" className="block py-3 font-display font-bold uppercase text-blu" onClick={() => setAperto(false)}>
+            <Link href="/tesseramento" className="block py-3 font-display font-bold uppercase text-accento" onClick={() => setAperto(false)}>
               Tesserati →
             </Link>
           </li>

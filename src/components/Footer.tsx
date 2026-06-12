@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="bg-antracite text-white">
         <div className="max-w-6xl mx-auto px-4 py-10 grid gap-8 md:grid-cols-3">
           <div>
-            <p className="font-display font-black text-lg">FerroViaLibera APS</p>
+            <p className="font-marchio font-extrabold text-xl">FerroViaLibera APS</p>
             <p className="text-gray-300 text-sm mt-2">
               Per un settore ferroviario libero da discriminazioni e pienamente inclusivo.
             </p>

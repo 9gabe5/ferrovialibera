@@ -35,7 +35,7 @@ export default async function Negozio() {
               Torneremo con il Calendario Ferroviario 2027 e tanti altri gadget. Nel frattempo,
               il modo migliore per sostenerci è il tesseramento!
             </p>
-            <Link href="/tesseramento" className="btn btn-blu mt-6">Tesserati ora</Link>
+            <Link href="/tesseramento" className="btn btn-accento mt-6">Tesserati ora</Link>
           </>
         )}
       </section>

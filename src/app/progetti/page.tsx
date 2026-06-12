@@ -53,7 +53,7 @@ export default function Progetti() {
       <section className="cartello">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <h1 className="text-4xl md:text-5xl">Progetti</h1>
-          <p className="normal-case tracking-normal font-body font-normal text-blue-100 mt-2">
+          <p className="normal-case tracking-normal font-body font-normal text-white/85 mt-2">
             I binari su cui corre il nostro impegno.
           </p>
         </div>
@@ -65,7 +65,7 @@ export default function Progetti() {
           <article key={p.titolo} className="border border-gray-200 bg-white flex flex-col">
             <img src={p.img} alt="" className="w-full aspect-[16/9] object-cover" />
             <div className="p-5 flex flex-col flex-1">
-              <h2 className="font-display font-bold text-xl text-blu">{p.titolo}</h2>
+              <h2 className="font-display font-bold text-xl text-accento">{p.titolo}</h2>
               <p className="mt-2 text-pietrisco flex-1">{p.testo}</p>
               {p.link.startsWith("/") ? (
                 <Link href={p.link} className="btn btn-bordo mt-4 self-start text-xs">{p.cta}</Link>

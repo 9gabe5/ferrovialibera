@@ -36,7 +36,7 @@ export default async function Eventi() {
       </section>
 
       <section className="max-w-6xl mx-auto px-4 py-12">
-        <h2 className="font-display font-black text-2xl text-blu mb-4">In partenza</h2>
+        <h2 className="font-display font-black text-2xl text-accento mb-4">In partenza</h2>
         {futuri.length === 0 ? (
           <p className="text-pietrisco font-mono">Nessuna partenza in programma al momento.</p>
         ) : (
@@ -45,9 +45,9 @@ export default async function Eventi() {
               <li key={e.id}>
                 <Link
                   href={`/eventi/${e.id}`}
-                  className="grid grid-cols-[5rem_1fr] sm:grid-cols-[6rem_1fr_10rem_7rem] gap-3 items-center px-4 py-4 hover:bg-blue-50"
+                  className="grid grid-cols-[5rem_1fr] sm:grid-cols-[6rem_1fr_10rem_7rem] gap-3 items-center px-4 py-4 hover:bg-gray-50"
                 >
-                  <span className="text-blu font-semibold">
+                  <span className="text-accento font-semibold">
                     {new Date(e.data_inizio).toLocaleDateString("it-IT", { day: "2-digit", month: "short" })}
                   </span>
                   <span className="uppercase tracking-wide">{e.titolo}</span>

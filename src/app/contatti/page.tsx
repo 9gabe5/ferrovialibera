@@ -16,9 +16,9 @@ export default function Contatti() {
         <div className="border-t border-gray-200 pt-6 text-pietrisco">
           <p>
             Puoi anche scriverci direttamente a{" "}
-            <a href="mailto:info@ferrovialibera.it" className="underline text-blu">info@ferrovialibera.it</a>{" "}
+            <a href="mailto:info@ferrovialibera.it" className="underline text-accento">info@ferrovialibera.it</a>{" "}
             o entrare nel nostro{" "}
-            <a href="https://chat.whatsapp.com/FV2NFHRpmF38fSZi4ffXGi" className="underline text-blu">gruppo WhatsApp</a>.
+            <a href="https://chat.whatsapp.com/FV2NFHRpmF38fSZi4ffXGi" className="underline text-accento">gruppo WhatsApp</a>.
           </p>
         </div>
       </section>
