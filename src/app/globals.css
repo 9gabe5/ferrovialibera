@@ -1,0 +1,42 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+
+body {
+  @apply bg-latte text-antracite font-body antialiased;
+}
+
+/* Filetto arcobaleno: la riga di livrea */
+.filetto {
+  height: 4px;
+  background: linear-gradient(90deg,#E40303,#FF8C00,#FFED00,#008026,#24408E,#732982);
+}
+.filetto-sottile { height: 3px; background: linear-gradient(90deg,#E40303,#FF8C00,#FFED00,#008026,#24408E,#732982); }
+
+/* Cartello di stazione */
+.cartello {
+  @apply bg-blu text-white font-display font-bold uppercase tracking-wide;
+}
+
+/* Focus visibile ovunque (accessibilità) */
+:focus-visible {
+  outline: 3px solid #16356B;
+  outline-offset: 2px;
+}
+
+.btn {
+  @apply inline-block px-6 py-3 font-display font-bold uppercase tracking-wide text-sm transition-colors;
+}
+.btn-blu { @apply bg-blu text-white hover:bg-blu-scuro; }
+.btn-bordo { @apply border-2 border-blu text-blu hover:bg-blu hover:text-white; }
+
+.input {
+  @apply w-full border-2 border-gray-300 bg-white px-4 py-3 text-base focus:border-blu focus:outline-none;
+}
+.label { @apply block font-display font-semibold text-sm uppercase tracking-wide mb-1; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
