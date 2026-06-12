@@ -36,7 +36,8 @@ export default function Admin() {
   const [autenticato, setAutenticato] = useState(false);
   const [password, setPassword] = useState("");
   const [erroreLogin, setErroreLogin] = useState("");
-  const [tab, setTab] = useState<"soci" | "storico" | "eventi" | "messaggi">("soci");
+  const [tab, setTab] = useState<"persone" | "soci" | "storico" | "eventi" | "messaggi">("persone");
+  const [fSocio, setFSocio] = useState("tutti");
   const [csvTesto, setCsvTesto] = useState("");
   const [esitoImport, setEsitoImport] = useState("");
 
@@ -196,7 +197,8 @@ export default function Admin() {
 
       <div className="flex gap-2 mb-8 flex-wrap">
         {([
-          ["soci", `Soci ${inAttesa ? `(${inAttesa} in attesa)` : ""}`],
+          ["persone", "Soci"],
+          ["soci", `Richieste ${inAttesa ? `(${inAttesa})` : ""}`],
           ["storico", "Storico"],
           ["eventi", "Eventi"],
           ["messaggi", `Messaggi ${nonLetti ? `(${nonLetti})` : ""}`],
@@ -210,6 +212,93 @@ export default function Admin() {
           </button>
         ))}
       </div>
+
+      {tab === "persone" && (() => {
+        const annoCorrente = new Date().getFullYear();
+        const mappa = new Map<string, { chiave: string; righe: Socio[] }>();
+        for (const r of soci) {
+          if (r.stato === "respinto") continue;
+          const chiave = (r.codice_fiscale || r.email || `${r.nome}-${r.cognome}`).toLowerCase();
+          if (!mappa.has(chiave)) mappa.set(chiave, { chiave, righe: [] });
+          mappa.get(chiave)!.righe.push(r);
+        }
+        const dataIscrizione = (r: Socio) => {
+          const m = (r.note || "").match(/pagato (\d{4}-\d{2}-\d{2})/);
+          return m ? m[1] : r.created_at.slice(0, 10);
+        };
+        const persone = Array.from(mappa.values()).map(({ chiave, righe }) => {
+          const ordinate = [...righe].sort((a, b) => a.anno - b.anno || dataIscrizione(a).localeCompare(dataIscrizione(b)));
+          const recente = [...righe].sort((a, b) => b.anno - a.anno)[0];
+          const inRegola = righe.some((r) => r.anno === annoCorrente && r.stato === "approvato");
+          const anni = Array.from(new Set(righe.filter((r) => r.stato === "approvato").map((r) => r.anno))).sort();
+          return { chiave, recente, inRegola, anni, da: dataIscrizione(ordinate[0]) };
+        }).sort((a, b) => `${a.recente.cognome} ${a.recente.nome}`.localeCompare(`${b.recente.cognome} ${b.recente.nome}`));
+
+        const filtrate = persone.filter((p) => {
+          if (fSocio === "soci" && !p.inRegola) return false;
+          if (fSocio === "non_soci" && p.inRegola) return false;
+          if (fTesto) {
+            const t = fTesto.toLowerCase();
+            const r = p.recente;
+            const blob = `${r.nome} ${r.cognome} ${r.email} ${r.codice_fiscale ?? ""} ${r.citta ?? ""} ${r.telefono ?? ""}`.toLowerCase();
+            if (!blob.includes(t)) return false;
+          }
+          return true;
+        });
+
+        const dataIt = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
+
+        return (
+          <section>
+            <div className="grid gap-2 sm:grid-cols-3 mb-4">
+              <input className="input sm:col-span-2" placeholder="🔎 Cerca nome, email, CF, città…" value={fTesto} onChange={(e) => setFTesto(e.target.value)} />
+              <select className="input" value={fSocio} onChange={(e) => setFSocio(e.target.value)} aria-label="Filtra soci">
+                <option value="tutti">Tutte le persone</option>
+                <option value="soci">Solo soci {annoCorrente}</option>
+                <option value="non_soci">Solo non soci</option>
+              </select>
+            </div>
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+              <p className="text-pietrisco text-sm">
+                {filtrate.length} persone · <span className="text-green-700 font-semibold">{persone.filter((p) => p.inRegola).length} soci in regola {annoCorrente}</span> · {persone.filter((p) => !p.inRegola).length} non soci
+              </p>
+              <button className="btn btn-bordo text-xs" onClick={() => scaricaCsv("anagrafica-soci.csv", filtrate.map((p) => ({
+                socio_in_regola: p.inRegola ? "SI" : "NO", socio_dal: p.da, anni: p.anni.join(" "),
+                nome: p.recente.nome, cognome: p.recente.cognome, email: p.recente.email,
+                telefono: p.recente.telefono, codice_fiscale: p.recente.codice_fiscale, citta: p.recente.citta,
+              })))}>Esporta CSV</button>
+            </div>
+            <div className="space-y-3">
+              {filtrate.map((p) => {
+                const r = p.recente;
+                return (
+                  <article key={p.chiave} className={`border-2 p-4 bg-white ${p.inRegola ? "border-green-600" : "border-red-400"}`}>
+                    <div className="flex justify-between items-start flex-wrap gap-2">
+                      <div>
+                        <p className="font-display font-bold text-lg">
+                          {r.nome} {r.cognome}{" "}
+                          {p.inRegola
+                            ? <span className="text-green-700 text-sm font-mono">✓ Socio</span>
+                            : <span className="text-segnale text-sm font-mono font-bold">✗ Non socio</span>}
+                        </p>
+                        <p className="text-sm text-pietrisco">Socio dal {dataIt(p.da)} · anni: {p.anni.length ? p.anni.join(" · ") : "—"}</p>
+                        <p className="text-sm mt-1">
+                          {r.email}{r.telefono ? <> · <a className="text-accento underline" href={`tel:${r.telefono}`}>{r.telefono}</a></> : ""}
+                        </p>
+                        <p className="text-sm text-pietrisco">
+                          {r.codice_fiscale ? `CF ${r.codice_fiscale}` : "CF mancante"}{r.citta ? ` · ${r.citta}` : ""}
+                        </p>
+                      </div>
+                      <button className="btn text-xs btn-bordo" aria-label={`Modifica ${r.nome} ${r.cognome}`} onClick={() => { setTab("soci"); setFTesto(r.email); }}>✏️</button>
+                    </div>
+                  </article>
+                );
+              })}
+              {filtrate.length === 0 && <p className="text-pietrisco font-mono">Nessuna persona trovata.</p>}
+            </div>
+          </section>
+        );
+      })()}
 
       {tab === "soci" && (() => {
         const anni = Array.from(new Set(soci.map((x) => x.anno))).sort((a, b) => b - a);
