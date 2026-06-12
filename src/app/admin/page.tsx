@@ -263,6 +263,23 @@ export default function Admin() {
                   Prima riga = intestazioni. Colonne riconosciute: <code className="font-mono">anno; nome; cognome; email; telefono; codice_fiscale; data_nascita; citta; metodo_pagamento; note</code>.
                   Obbligatorie solo <strong>anno, nome, cognome</strong>. Separatore ; o , — vengono salvate come approvate.
                 </p>
+                <div>
+                  <label className="label" htmlFor="csv-file">Carica il file CSV</label>
+                  <input
+                    id="csv-file"
+                    type="file"
+                    accept=".csv,text/csv,text/plain"
+                    className="block w-full text-sm"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = () => setCsvTesto(String(reader.result || ""));
+                      reader.readAsText(file, "utf-8");
+                    }}
+                  />
+                </div>
+                <p className="text-pietrisco">…oppure incolla il testo qui sotto:</p>
                 <textarea
                   className="input font-mono text-xs"
                   rows={8}
