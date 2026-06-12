@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { notificaAdmin } from "@/lib/notifiche";
 
 export async function POST(req: Request) {
   const b = await req.json();
@@ -21,6 +22,10 @@ export async function POST(req: Request) {
     cap: b.cap || null,
     metodo_pagamento: b.metodo_pagamento,
   });
-  if (error) return NextResponse.json({ error: "Salvataggio non riuscito" }, { status: 500 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await notificaAdmin(
+    `Nuova richiesta di ${b.tipo === "rinnovo" ? "rinnovo" : "tesseramento"}: ${b.nome} ${b.cognome}`,
+    `${b.nome} ${b.cognome} (${b.email}) ha inviato una richiesta di ${b.tipo === "rinnovo" ? "rinnovo" : "tesseramento"} per il 2026.\nPagamento dichiarato: ${b.metodo_pagamento}.\nVai su ferrovialibera.it/admin per approvare.`
+  );
   return NextResponse.json({ ok: true });
 }

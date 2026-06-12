@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
+import { notificaAdmin } from "@/lib/notifiche";
 
 export async function POST(req: Request) {
   const b = await req.json();
@@ -23,6 +24,10 @@ export async function POST(req: Request) {
     telefono: b.telefono || null,
     note: b.note || null,
   });
-  if (error) return NextResponse.json({ error: "Salvataggio non riuscito" }, { status: 500 });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  await notificaAdmin(
+    `Nuova iscrizione evento: ${b.nome}`,
+    `${b.nome} (${b.email}) si è iscrittə a un evento.\nDettagli su ferrovialibera.it/admin.`
+  );
   return NextResponse.json({ ok: true });
 }

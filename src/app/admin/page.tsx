@@ -36,7 +36,9 @@ export default function Admin() {
   const [autenticato, setAutenticato] = useState(false);
   const [password, setPassword] = useState("");
   const [erroreLogin, setErroreLogin] = useState("");
-  const [tab, setTab] = useState<"soci" | "eventi" | "messaggi">("soci");
+  const [tab, setTab] = useState<"soci" | "storico" | "eventi" | "messaggi">("soci");
+  const [csvTesto, setCsvTesto] = useState("");
+  const [esitoImport, setEsitoImport] = useState("");
 
   const [soci, setSoci] = useState<Socio[]>([]);
   const [eventi, setEventi] = useState<Evento[]>([]);
@@ -117,6 +119,35 @@ export default function Admin() {
     setMessaggi((p) => p.map((m) => (m.id === id ? { ...m, letto } : m)));
   }
 
+  function parseCsv(testo: string) {
+    const righeRaw = testo.trim().split(/\r?\n/).filter(Boolean);
+    if (righeRaw.length < 2) return [];
+    const sep = righeRaw[0].includes(";") ? ";" : ",";
+    const intest = righeRaw[0].split(sep).map((h) => h.trim().toLowerCase().replace(/\s+/g, "_"));
+    return righeRaw.slice(1).map((riga) => {
+      const valori = riga.split(sep).map((v) => v.trim().replace(/^"|"$/g, ""));
+      const o: Record<string, string> = {};
+      intest.forEach((h, i) => { o[h] = valori[i] ?? ""; });
+      return o;
+    });
+  }
+
+  async function importaCsv() {
+    setEsitoImport("");
+    const righe = parseCsv(csvTesto);
+    if (righe.length === 0) { setEsitoImport("Nessuna riga valida trovata. Servono intestazioni + dati."); return; }
+    const res = await fetch("/api/admin/import", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ righe }),
+    });
+    const json = await res.json();
+    if (!res.ok) { setEsitoImport("Errore: " + json.error); return; }
+    setEsitoImport(`Importate ${json.importate} righe ✓`);
+    setCsvTesto("");
+    carica();
+  }
+
   if (!autenticato) {
     return (
       <div className="max-w-sm mx-auto px-4 py-24">
@@ -147,6 +178,7 @@ export default function Admin() {
       <div className="flex gap-2 mb-8 flex-wrap">
         {([
           ["soci", `Soci ${inAttesa ? `(${inAttesa} in attesa)` : ""}`],
+          ["storico", "Storico"],
           ["eventi", "Eventi"],
           ["messaggi", `Messaggi ${nonLetti ? `(${nonLetti})` : ""}`],
         ] as const).map(([t, label]) => (
@@ -201,6 +233,82 @@ export default function Admin() {
           </div>
         </section>
       )}
+
+      {tab === "storico" && (() => {
+        const persone = new Map<string, { nome: string; chiave: string; email: string; anni: Map<number, string> }>();
+        for (const s of soci) {
+          const chiave = (s.codice_fiscale || s.email || `${s.nome}-${s.cognome}`).toLowerCase();
+          if (!persone.has(chiave)) {
+            persone.set(chiave, { nome: `${s.nome} ${s.cognome}`, chiave, email: s.email, anni: new Map() });
+          }
+          const p = persone.get(chiave)!;
+          const prec = p.anni.get(s.anno);
+          if (!prec || s.stato === "approvato") p.anni.set(s.anno, s.stato);
+        }
+        const anniTutti = Array.from(new Set(soci.map((s) => s.anno))).sort();
+        const lista = Array.from(persone.values()).sort((a, b) => a.nome.localeCompare(b.nome));
+        const annoCorrente = 2026;
+        return (
+          <section>
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+              <p className="text-pietrisco text-sm">
+                {lista.length} persone · {lista.filter((p) => p.anni.get(annoCorrente) === "approvato").length} in regola per il {annoCorrente}
+              </p>
+            </div>
+
+            <details className="border-2 border-gray-300 bg-white p-4 mb-6">
+              <summary className="font-display font-bold cursor-pointer">📥 Importa soci da CSV (anni passati)</summary>
+              <div className="mt-3 space-y-3 text-sm">
+                <p className="text-pietrisco">
+                  Prima riga = intestazioni. Colonne riconosciute: <code className="font-mono">anno; nome; cognome; email; telefono; codice_fiscale; data_nascita; citta; metodo_pagamento; note</code>.
+                  Obbligatorie solo <strong>anno, nome, cognome</strong>. Separatore ; o , — vengono salvate come approvate.
+                </p>
+                <textarea
+                  className="input font-mono text-xs"
+                  rows={8}
+                  placeholder={"anno;nome;cognome;email\n2023;Maria;Rossi;maria@esempio.it\n2024;Maria;Rossi;maria@esempio.it"}
+                  value={csvTesto}
+                  onChange={(e) => setCsvTesto(e.target.value)}
+                />
+                <div className="flex items-center gap-3 flex-wrap">
+                  <button className="btn btn-accento text-xs" onClick={importaCsv}>Importa</button>
+                  {esitoImport && <p className="font-semibold">{esitoImport}</p>}
+                </div>
+              </div>
+            </details>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm bg-white border border-gray-300">
+                <thead>
+                  <tr className="cartello text-left text-xs">
+                    <th className="p-2">Socio</th>
+                    {anniTutti.map((a) => <th key={a} className="p-2 text-center">{a}</th>)}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {lista.map((p) => (
+                    <tr key={p.chiave}>
+                      <td className="p-2">
+                        <span className="font-display font-semibold">{p.nome}</span>
+                        <span className="block text-xs text-pietrisco">{p.email}</span>
+                      </td>
+                      {anniTutti.map((a) => {
+                        const st = p.anni.get(a);
+                        return (
+                          <td key={a} className="p-2 text-center font-mono">
+                            {st === "approvato" ? "✓" : st === "in_attesa" ? "⏳" : st === "respinto" ? "✗" : "·"}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-pietrisco mt-2 font-mono">✓ approvato · ⏳ in attesa · ✗ respinto · "·" nessuna richiesta</p>
+          </section>
+        );
+      })()}
 
       {tab === "eventi" && (
         <section>
