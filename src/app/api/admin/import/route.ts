@@ -19,7 +19,9 @@ export async function POST(req: Request) {
       anno: Number(r.anno),
       nome: String(r.nome).trim(),
       cognome: String(r.cognome).trim(),
-      email: r.email ? String(r.email).trim().toLowerCase() : "non-disponibile@ferrovialibera.it",
+      email: r.email
+        ? String(r.email).trim().toLowerCase()
+        : `${String(r.nome + "." + r.cognome).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, ".").replace(/^\.|\.$/g, "")}@soci.ferrovialibera.it`,
       telefono: r.telefono || null,
       codice_fiscale: r.codice_fiscale ? String(r.codice_fiscale).trim().toUpperCase() : null,
       data_nascita: r.data_nascita || null,
