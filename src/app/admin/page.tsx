@@ -46,6 +46,11 @@ export default function Admin() {
   const [iscrizioni, setIscrizioni] = useState<Iscrizione[]>([]);
   const [eventoAperto, setEventoAperto] = useState<string | null>(null);
   const [mostraFormEvento, setMostraFormEvento] = useState(false);
+  const [fTesto, setFTesto] = useState("");
+  const [fAnno, setFAnno] = useState("tutti");
+  const [fStato, setFStato] = useState("tutti");
+  const [fMetodo, setFMetodo] = useState("tutti");
+  const [modificaId, setModificaId] = useState<string | null>(null);
 
   async function carica() {
     const [s, e, m] = await Promise.all([
@@ -77,6 +82,20 @@ export default function Admin() {
   async function aggiornaSocio(id: string, stato: string) {
     await fetch("/api/admin/soci", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, stato }) });
     setSoci((p) => p.map((s) => (s.id === id ? { ...s, stato } : s)));
+  }
+
+  async function salvaModifica(ev: React.FormEvent<HTMLFormElement>, id: string) {
+    ev.preventDefault();
+    const f = new FormData(ev.currentTarget);
+    const campi = Object.fromEntries(f.entries());
+    const res = await fetch("/api/admin/soci", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, ...campi }),
+    });
+    if (!res.ok) { alert("Errore nel salvataggio"); return; }
+    setModificaId(null);
+    carica();
   }
 
   async function salvaEvento(ev: React.FormEvent<HTMLFormElement>) {
@@ -192,47 +211,122 @@ export default function Admin() {
         ))}
       </div>
 
-      {tab === "soci" && (
-        <section>
-          <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
-            <p className="text-pietrisco text-sm">{soci.length} richieste totali · {soci.filter((s) => s.stato === "approvato").length} approvate</p>
-            <button className="btn btn-bordo text-xs" onClick={() => scaricaCsv("soci-ferrovialibera.csv", soci)}>Esporta CSV</button>
-          </div>
-          <div className="space-y-3">
-            {soci.map((s) => (
-              <article key={s.id} className={`border-2 p-4 bg-white ${s.stato === "in_attesa" ? "border-yellow-500" : s.stato === "approvato" ? "border-green-600" : "border-gray-300 opacity-70"}`}>
-                <div className="flex justify-between items-start flex-wrap gap-2">
-                  <div>
-                    <p className="font-display font-bold">
-                      {s.nome} {s.cognome}{" "}
-                      <span className="text-xs font-mono text-pietrisco">· {s.tipo} {s.anno} · {dt(s.created_at)}</span>
-                    </p>
-                    <p className="text-sm text-pietrisco">
-                      {s.email} · {s.telefono} · CF {s.codice_fiscale}
-                      {s.citta ? ` · ${s.citta}` : ""}
-                    </p>
-                    <p className="text-sm mt-1">
-                      Pagamento dichiarato: <strong className="uppercase">{s.metodo_pagamento}</strong>
-                    </p>
+      {tab === "soci" && (() => {
+        const anni = Array.from(new Set(soci.map((x) => x.anno))).sort((a, b) => b - a);
+        const filtrati = soci.filter((x) => {
+          if (fAnno !== "tutti" && String(x.anno) !== fAnno) return false;
+          if (fStato !== "tutti" && x.stato !== fStato) return false;
+          if (fMetodo !== "tutti" && x.metodo_pagamento !== fMetodo) return false;
+          if (fTesto) {
+            const t = fTesto.toLowerCase();
+            const blob = `${x.nome} ${x.cognome} ${x.email} ${x.codice_fiscale ?? ""} ${x.citta ?? ""}`.toLowerCase();
+            if (!blob.includes(t)) return false;
+          }
+          return true;
+        });
+        return (
+          <section>
+            <div className="grid gap-2 sm:grid-cols-4 mb-4">
+              <input className="input sm:col-span-2" placeholder="🔎 Cerca nome, email, CF, città…" value={fTesto} onChange={(e) => setFTesto(e.target.value)} />
+              <select className="input" value={fAnno} onChange={(e) => setFAnno(e.target.value)} aria-label="Filtra per anno">
+                <option value="tutti">Tutti gli anni</option>
+                {anni.map((a) => <option key={a} value={String(a)}>{a}</option>)}
+              </select>
+              <div className="grid grid-cols-2 gap-2">
+                <select className="input" value={fStato} onChange={(e) => setFStato(e.target.value)} aria-label="Filtra per stato">
+                  <option value="tutti">Ogni stato</option>
+                  <option value="in_attesa">In attesa</option>
+                  <option value="approvato">Approvati</option>
+                  <option value="respinto">Scartati</option>
+                </select>
+                <select className="input" value={fMetodo} onChange={(e) => setFMetodo(e.target.value)} aria-label="Filtra per pagamento">
+                  <option value="tutti">Ogni pagamento</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="bonifico">Bonifico</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
+              <p className="text-pietrisco text-sm">{filtrati.length} risultati su {soci.length} richieste</p>
+              <button className="btn btn-bordo text-xs" onClick={() => scaricaCsv("soci-ferrovialibera.csv", filtrati)}>Esporta CSV</button>
+            </div>
+            <div className="space-y-3">
+              {filtrati.map((s) => (
+                <article key={s.id} className={`border-2 p-4 bg-white ${s.stato === "in_attesa" ? "border-yellow-500" : s.stato === "approvato" ? "border-green-600" : "border-gray-300 opacity-70"}`}>
+                  <div className="flex justify-between items-start flex-wrap gap-2">
+                    <div>
+                      <p className="font-display font-bold">
+                        {s.nome} {s.cognome}{" "}
+                        <span className="text-xs font-mono text-pietrisco">· {s.tipo} {s.anno} · {dt(s.created_at)}</span>
+                        {s.stato === "approvato" && <span className="ml-1 text-green-700 text-xs font-mono">✓ socio</span>}
+                        {s.stato === "respinto" && <span className="ml-1 text-pietrisco text-xs font-mono">scartato</span>}
+                      </p>
+                      <p className="text-sm text-pietrisco">
+                        {s.email}{s.telefono ? ` · ${s.telefono}` : ""}{s.codice_fiscale ? ` · CF ${s.codice_fiscale}` : ""}{s.citta ? ` · ${s.citta}` : ""}
+                      </p>
+                      {s.metodo_pagamento && (
+                        <p className="text-sm mt-1">Pagamento: <strong className="uppercase">{s.metodo_pagamento}</strong></p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      {s.stato === "in_attesa" && (
+                        <>
+                          <button className="btn text-xs bg-green-700 text-white hover:bg-green-800" onClick={() => aggiornaSocio(s.id, "approvato")}>Approva</button>
+                          <button className="btn text-xs btn-bordo" onClick={() => { if (confirm(`Scartare la richiesta di ${s.nome} ${s.cognome}?`)) aggiornaSocio(s.id, "respinto"); }}>Scarta</button>
+                        </>
+                      )}
+                      <button className="btn text-xs btn-bordo" aria-label={`Modifica ${s.nome} ${s.cognome}`} onClick={() => setModificaId(modificaId === s.id ? null : s.id)}>✏️</button>
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {s.stato !== "approvato" && (
-                      <button className="btn text-xs bg-green-700 text-white hover:bg-green-800" onClick={() => aggiornaSocio(s.id, "approvato")}>Approva</button>
-                    )}
-                    {s.stato !== "respinto" && (
-                      <button className="btn text-xs btn-bordo" onClick={() => aggiornaSocio(s.id, "respinto")}>Respingi</button>
-                    )}
-                    {s.stato !== "in_attesa" && (
-                      <button className="btn text-xs btn-bordo" onClick={() => aggiornaSocio(s.id, "in_attesa")}>↺</button>
-                    )}
-                  </div>
-                </div>
-              </article>
-            ))}
-            {soci.length === 0 && <p className="text-pietrisco font-mono">Nessuna richiesta ancora.</p>}
-          </div>
-        </section>
-      )}
+
+                  {modificaId === s.id && (
+                    <form onSubmit={(e) => salvaModifica(e, s.id)} className="mt-4 border-t pt-4 grid gap-3 sm:grid-cols-3 text-sm">
+                      <div><label className="label">Nome</label><input className="input" name="nome" defaultValue={s.nome} /></div>
+                      <div><label className="label">Cognome</label><input className="input" name="cognome" defaultValue={s.cognome} /></div>
+                      <div><label className="label">Email</label><input className="input" name="email" type="email" defaultValue={s.email} /></div>
+                      <div><label className="label">Telefono</label><input className="input" name="telefono" defaultValue={s.telefono ?? ""} /></div>
+                      <div><label className="label">Codice fiscale</label><input className="input uppercase" name="codice_fiscale" defaultValue={s.codice_fiscale ?? ""} /></div>
+                      <div><label className="label">Data di nascita</label><input className="input" name="data_nascita" type="date" defaultValue={s.data_nascita ?? ""} /></div>
+                      <div><label className="label">Città</label><input className="input" name="citta" defaultValue={s.citta ?? ""} /></div>
+                      <div><label className="label">Indirizzo</label><input className="input" name="indirizzo" defaultValue={s.indirizzo ?? ""} /></div>
+                      <div><label className="label">Anno</label><input className="input" name="anno" type="number" defaultValue={s.anno} /></div>
+                      <div>
+                        <label className="label">Tipo</label>
+                        <select className="input" name="tipo" defaultValue={s.tipo}>
+                          <option value="nuovo">nuovo</option>
+                          <option value="rinnovo">rinnovo</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="label">Pagamento</label>
+                        <select className="input" name="metodo_pagamento" defaultValue={s.metodo_pagamento ?? ""}>
+                          <option value="">—</option>
+                          <option value="paypal">paypal</option>
+                          <option value="bonifico">bonifico</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="label">Stato</label>
+                        <select className="input" name="stato" defaultValue={s.stato}>
+                          <option value="in_attesa">in attesa</option>
+                          <option value="approvato">approvato</option>
+                          <option value="respinto">scartato</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-3"><label className="label">Note</label><input className="input" name="note" defaultValue={s.note ?? ""} /></div>
+                      <div className="sm:col-span-3 flex gap-2">
+                        <button type="submit" className="btn btn-accento text-xs">Salva</button>
+                        <button type="button" className="btn btn-bordo text-xs" onClick={() => setModificaId(null)}>Annulla</button>
+                      </div>
+                    </form>
+                  )}
+                </article>
+              ))}
+              {filtrati.length === 0 && <p className="text-pietrisco font-mono">Nessun risultato con questi filtri.</p>}
+            </div>
+          </section>
+        );
+      })()}
 
       {tab === "storico" && (() => {
         const persone = new Map<string, { nome: string; chiave: string; email: string; anni: Map<number, string> }>();

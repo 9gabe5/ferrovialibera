@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       codice_fiscale: r.codice_fiscale ? String(r.codice_fiscale).trim().toUpperCase() : null,
       data_nascita: r.data_nascita || null,
       citta: r.citta || null,
+      indirizzo: r.indirizzo || null,
       metodo_pagamento: r.metodo_pagamento === "bonifico" ? "bonifico" : r.metodo_pagamento === "paypal" ? "paypal" : null,
       stato: "approvato",
       note: r.note || "import storico",
