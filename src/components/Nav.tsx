@@ -20,7 +20,7 @@ export default function Nav() {
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <nav className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16" aria-label="Principale">
         <Link href="/" className="flex items-center gap-2 font-marchio font-extrabold text-2xl text-accento tracking-tight" onClick={() => setAperto(false)}>
-          <img src="https://static.wixstatic.com/media/a7f111_acf09c3e80b94ac9ac8a7c1abf88d7ec~mv2.png" alt="" width={40} height={40} />
+          <img src="/immagini/logo.png" alt="" width={40} height={40} />
           FerroViaLibera
         </Link>
 

@@ -1,12 +1,12 @@
 export const metadata = { title: "Su di noi | FerroViaLibera" };
 
 // Quando hai i file, basta incollare qui l'URL (o il percorso /immagini/...)
-const LOGO_NUOVO: string | null = null;
+const LOGO_NUOVO: string | null = "/immagini/logo.png";
 
 const direttivo: { nome: string; ruolo: string; foto: string | null }[] = [
-  { nome: "Gabriele Roscini", ruolo: "Presidente e Fondatore", foto: null },
-  { nome: "Andrea Ruggiero", ruolo: "Vice Presidente", foto: null },
-  { nome: "Mohammad Lamloum", ruolo: "Tesoriere", foto: null },
+  { nome: "Gabriele Roscini", ruolo: "Presidente e Fondatore", foto: "/immagini/gabriele.jpg" },
+  { nome: "Andrea Ruggiero", ruolo: "Vice Presidente", foto: "/immagini/andrea.jpg" },
+  { nome: "Mohammad Lamloum", ruolo: "Tesoriere", foto: "/immagini/mohammad.jpg" },
 ];
 
 function BoxFoto({ alt }: { alt: string }) {
