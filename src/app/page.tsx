@@ -45,7 +45,7 @@ export default async function Home() {
             </Link>
           </div>
         </div>
-        <div className="filetto" aria-hidden="true" />
+        <div className="binario-treno" aria-hidden="true"><span className="treno">🚆</span></div>
       </section>
 
       {/* CHI SIAMO */}
@@ -134,6 +134,9 @@ export default async function Home() {
           <Link href="/tesseramento" className="btn btn-accento">Tesseramento 2026</Link>
           <Link href="/rinnovo" className="btn btn-bordo">Rinnova la tessera</Link>
         </div>
+        <p className="mt-5 text-sm text-pietrisco">
+          Sei già socə? <Link href="/tessera" className="text-accento underline font-semibold">Scarica la tua tessera digitale 🎫</Link>
+        </p>
       </section>
     </>
   );

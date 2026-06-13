@@ -20,6 +20,7 @@ export default function Footer() {
             <ul className="space-y-1 text-sm text-gray-300">
               <li><Link href="/tesseramento" className="hover:text-white">Tesseramento</Link></li>
               <li><Link href="/rinnovo" className="hover:text-white">Rinnovo tessera</Link></li>
+              <li><Link href="/tessera" className="hover:text-white">La mia tessera</Link></li>
               <li><Link href="/eventi" className="hover:text-white">Eventi</Link></li>
               <li><Link href="/statuto" className="hover:text-white">Statuto</Link></li>
               <li><Link href="/negozio" className="hover:text-white">Negozio</Link></li>

@@ -52,3 +52,36 @@ body {
 }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
 .blink { animation: blink 1.2s steps(1) infinite; }
+
+/* Tessera socio */
+.tessera {
+  width: 340px;
+  max-width: 86vw;
+  border-radius: 14px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #234E43 0%, #2F6E5E 100%);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.28);
+  position: relative;
+}
+.tessera-corpo { padding: 20px; }
+.tessera-flap { height: 4px; background: linear-gradient(90deg,#E40303,#FF8C00,#FFED00,#008026,#24408E,#732982); }
+.tessera-wrap { transition: transform .3s ease; perspective: 1000px; }
+@keyframes vola {
+  0% { transform: translateY(0) scale(1) rotateX(0); opacity: 1; }
+  60% { transform: translateY(8px) scale(0.96) rotateX(12deg); opacity: 1; }
+  100% { transform: translateY(220px) scale(0.5) rotateX(45deg); opacity: 0; }
+}
+.tessera-vola { animation: vola 1.05s cubic-bezier(.5,0,.6,1) forwards; }
+
+/* Trenino che passa sul binario arcobaleno */
+.binario-treno { position: relative; height: 4px; background: linear-gradient(90deg,#E40303,#FF8C00,#FFED00,#008026,#24408E,#732982); }
+.binario-treno .treno {
+  position: absolute; top: -15px; font-size: 22px; line-height: 1;
+  animation: corsa 16s linear infinite;
+  will-change: left;
+}
+@keyframes corsa {
+  0% { left: 104%; }
+  22% { left: -8%; }
+  100% { left: -8%; }
+}
