@@ -45,7 +45,7 @@ export default async function Home() {
             </Link>
           </div>
         </div>
-        <div className="binario-treno" aria-hidden="true"><span className="treno">🚆</span></div>
+        <div className="binario-treno" aria-hidden="true"><span className="treno">🚄</span></div>
       </section>
 
       {/* CHI SIAMO */}
