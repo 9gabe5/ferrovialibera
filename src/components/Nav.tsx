@@ -9,6 +9,7 @@ const voci = [
   { href: "/progetti", label: "Progetti" },
   { href: "/eventi", label: "Eventi" },
   { href: "/social", label: "Social" },
+  { href: "/press", label: "Press" },
   { href: "/statuto", label: "Statuto" },
   { href: "/contatti", label: "Contatti" },
 ];

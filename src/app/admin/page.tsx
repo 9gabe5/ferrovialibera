@@ -36,7 +36,9 @@ export default function Admin() {
   const [autenticato, setAutenticato] = useState(false);
   const [password, setPassword] = useState("");
   const [erroreLogin, setErroreLogin] = useState("");
-  const [tab, setTab] = useState<"persone" | "soci" | "storico" | "eventi" | "social" | "messaggi">("persone");
+  const [tab, setTab] = useState<"persone" | "soci" | "storico" | "eventi" | "social" | "press" | "messaggi">("persone");
+  const [press, setPress] = useState<any[]>([]);
+  const [mostraFormPress, setMostraFormPress] = useState(false);
   const [social, setSocial] = useState<{ id: string; url: string; ordine: number }[]>([]);
   const [nuovoUrl, setNuovoUrl] = useState("");
   const [fSocio, setFSocio] = useState("tutti");
@@ -58,17 +60,19 @@ export default function Admin() {
   const [fAnnoP, setFAnnoP] = useState("tutti");
 
   async function carica() {
-    const [s, e, m, so] = await Promise.all([
+    const [s, e, m, so, pr] = await Promise.all([
       fetch("/api/admin/soci").then((r) => r.json()),
       fetch("/api/admin/eventi").then((r) => r.json()),
       fetch("/api/admin/messaggi").then((r) => r.json()),
       fetch("/api/admin/social").then((r) => r.json()),
+      fetch("/api/admin/press").then((r) => r.json()),
     ]);
     if (s.error || e.error || m.error) { setAutenticato(false); return; }
     setSoci(s.data ?? []);
     setEventi(e.data ?? []);
     setMessaggi(m.data ?? []);
     setSocial(so.data ?? []);
+    setPress(pr.data ?? []);
     setAutenticato(true);
   }
 
@@ -134,6 +138,21 @@ export default function Admin() {
   }
   async function eliminaSocial(id: string) {
     await fetch("/api/admin/social", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    carica();
+  }
+
+  async function creaPress(ev: React.FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    const f = new FormData(ev.currentTarget);
+    const res = await fetch("/api/admin/press", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(f.entries())) });
+    const json = await res.json();
+    if (!res.ok) { alert("Errore: " + json.error); return; }
+    setMostraFormPress(false);
+    carica();
+  }
+  async function eliminaPress(id: string, titolo: string) {
+    if (!confirm(`Eliminare "${titolo}"?`)) return;
+    await fetch("/api/admin/press", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
     carica();
   }
 
@@ -240,6 +259,7 @@ export default function Admin() {
           ["storico", "Storico"],
           ["eventi", "Eventi"],
           ["social", "Social"],
+          ["press", "Press"],
           ["messaggi", `Messaggi ${nonLetti ? `(${nonLetti})` : ""}`],
         ] as const).map(([t, label]) => (
           <button
@@ -700,6 +720,44 @@ export default function Admin() {
             ))}
             {social.length === 0 && <li className="text-pietrisco font-mono">Nessun post ancora.</li>}
           </ul>
+        </section>
+      )}
+
+      {tab === "press" && (
+        <section>
+          <div className="flex justify-between items-center mb-4">
+            <p className="text-pietrisco text-sm">{press.length} voci in rassegna</p>
+            <button className="btn btn-accento text-xs" onClick={() => setMostraFormPress(!mostraFormPress)}>{mostraFormPress ? "Annulla" : "+ Aggiungi"}</button>
+          </div>
+          {mostraFormPress && (
+            <form onSubmit={creaPress} className="border-2 border-accento bg-white p-5 mb-6 grid gap-3 sm:grid-cols-2 text-sm">
+              <div>
+                <label className="label">Tipo</label>
+                <select className="input" name="tipo" defaultValue="articolo"><option value="articolo">Articolo (rassegna stampa)</option><option value="intervista">Intervista (testo sul sito)</option></select>
+              </div>
+              <div><label className="label">Data</label><input className="input" name="data_pubblicazione" type="date" /></div>
+              <div className="sm:col-span-2"><label className="label">Titolo *</label><input className="input" name="titolo" required /></div>
+              <div><label className="label">Testata</label><input className="input" name="testata" placeholder="Gay.it" /></div>
+              <div><label className="label">Autore</label><input className="input" name="autore" /></div>
+              <div className="sm:col-span-2"><label className="label">Link (per gli articoli)</label><input className="input" name="url" type="url" /></div>
+              <div className="sm:col-span-2"><label className="label">Immagine (URL)</label><input className="input" name="immagine_url" type="url" /></div>
+              <div className="sm:col-span-2"><label className="label">Estratto / sottotitolo</label><textarea className="input" name="estratto" rows={2} /></div>
+              <div className="sm:col-span-2"><label className="label">Corpo (solo interviste, testo completo)</label><textarea className="input" name="corpo" rows={6} /></div>
+              <button type="submit" className="btn btn-accento sm:col-span-2">Salva</button>
+            </form>
+          )}
+          <div className="space-y-2">
+            {press.map((p) => (
+              <article key={p.id} className="flex items-center justify-between gap-2 border border-gray-200 bg-white p-3">
+                <div>
+                  <p className="font-display font-bold text-sm">{p.titolo} <span className="font-mono text-xs text-pietrisco">· {p.tipo}{p.testata ? ` · ${p.testata}` : ""}</span></p>
+                  {p.url && <a href={p.url} className="text-accento underline text-xs break-all">{p.url}</a>}
+                </div>
+                <button className="btn text-xs bg-segnale text-white shrink-0" onClick={() => eliminaPress(p.id, p.titolo)}>🗑</button>
+              </article>
+            ))}
+            {press.length === 0 && <p className="text-pietrisco font-mono">Nessuna voce ancora.</p>}
+          </div>
         </section>
       )}
 
