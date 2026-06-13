@@ -154,7 +154,7 @@ export default function TesseraPage() {
                   <div className="flex items-center justify-between">
                     {logoData && <img src={logoData} alt="" width={52} height={52} decoding="sync" />}
                     <div className="text-right">
-                      <div className="font-mono text-[10px] tracking-widest text-white/60">TESSERA ANNO ASSOCIATIVO:</div>
+                      <div className="font-mono text-[10px] tracking-widest text-white/60">TESSERA ANNO</div>
                       <div className="font-display font-black text-2xl text-white leading-none">{t.anno}</div>
                     </div>
                   </div>
@@ -164,7 +164,7 @@ export default function TesseraPage() {
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-2 text-white/90">
                     <div>
-                      <div className="font-mono text-[10px] tracking-widest text-white/60">ISCRIZIONE EFFETTUATA NELL&apos;ANNO:</div>
+                      <div className="font-mono text-[10px] tracking-widest text-white/60">ISCRIZIONE:</div>
                       <div className="font-mono">{t.socio_dal}</div>
                     </div>
                     {t.citta && (
