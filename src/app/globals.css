@@ -40,3 +40,15 @@ body {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/* Tabellone Solari */
+@keyframes flapin {
+  0% { opacity: 0; transform: translateY(-8px) rotateX(-60deg); }
+  100% { opacity: 1; transform: translateY(0) rotateX(0); }
+}
+.tab-row {
+  animation: flapin 0.5s ease both;
+  transform-origin: top center;
+}
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+.blink { animation: blink 1.2s steps(1) infinite; }

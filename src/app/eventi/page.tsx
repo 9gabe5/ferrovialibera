@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabasePublic } from "@/lib/supabase";
+import Tabellone from "@/components/Tabellone";
 
 export const metadata = { title: "Eventi | FerroViaLibera" };
 export const revalidate = 300;
@@ -40,25 +41,7 @@ export default async function Eventi() {
         {futuri.length === 0 ? (
           <p className="text-pietrisco font-mono">Nessuna partenza in programma al momento.</p>
         ) : (
-          <ul className="font-mono divide-y divide-gray-200 border-y-2 border-antracite bg-white">
-            {futuri.map((e) => (
-              <li key={e.id}>
-                <Link
-                  href={`/eventi/${e.id}`}
-                  className="grid grid-cols-[5rem_1fr] sm:grid-cols-[6rem_1fr_10rem_7rem] gap-3 items-center px-4 py-4 hover:bg-gray-50"
-                >
-                  <span className="text-accento font-semibold">
-                    {new Date(e.data_inizio).toLocaleDateString("it-IT", { day: "2-digit", month: "short" })}
-                  </span>
-                  <span className="uppercase tracking-wide">{e.titolo}</span>
-                  <span className="text-pietrisco text-sm hidden sm:block truncate">{e.luogo}</span>
-                  <span className={`text-xs font-semibold ${e.registrazione_aperta ? "text-green-700" : "text-pietrisco"} hidden sm:block`}>
-                    {e.registrazione_aperta ? "ISCRIZIONI APERTE" : "—"}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <Tabellone eventi={futuri} />
         )}
 
         {passati.length > 0 && (
