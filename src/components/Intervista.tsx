@@ -1,64 +1,74 @@
 "use client";
 import { useState } from "react";
 
-type QA = { domanda: string; risposta: string[] };
+const LIMITE = 480; // caratteri mostrati da chiuso
 
-// Formato corpo: righe "D: domanda" seguite dai paragrafi di risposta.
-function parse(corpo: string): QA[] {
-  const blocchi: QA[] = [];
-  let corrente: QA | null = null;
+type Seg = { tipo: "domanda" | "para"; testo: string };
+
+function segmenta(corpo: string): Seg[] {
+  const segs: Seg[] = [];
+  const haQA = /^D:\s*/m.test(corpo);
+  if (!haQA) {
+    corpo.trim().split(/\n{2,}/).forEach((p) => segs.push({ tipo: "para", testo: p.trim() }));
+    return segs;
+  }
   let buffer: string[] = [];
-  const chiudi = () => {
-    if (corrente) {
-      corrente.risposta = buffer.join("\n").trim().split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
-      blocchi.push(corrente);
-    }
+  const svuota = () => {
+    buffer.join("\n").trim().split(/\n{2,}/).map((p) => p.trim()).filter(Boolean)
+      .forEach((p) => segs.push({ tipo: "para", testo: p }));
     buffer = [];
   };
   for (const riga of corpo.split(/\r?\n/)) {
     const m = riga.match(/^D:\s*(.*)$/);
-    if (m) { chiudi(); corrente = { domanda: m[1].trim(), risposta: [] }; }
-    else if (corrente) buffer.push(riga);
+    if (m) { svuota(); segs.push({ tipo: "domanda", testo: m[1].trim() }); }
+    else buffer.push(riga);
   }
-  chiudi();
-  return blocchi;
+  svuota();
+  return segs;
 }
 
 export default function Intervista({ corpo }: { corpo: string }) {
   const [aperto, setAperto] = useState(false);
-  const qa = parse(corpo);
+  const segs = segmenta(corpo);
+  const totale = segs.reduce((n, s) => n + s.testo.length, 0);
+  const lungo = totale > LIMITE;
 
-  // Se non è in formato D:/R:, mostra il testo semplice con leggi di più
-  if (qa.length === 0) {
-    return <div className="mt-4 whitespace-pre-line leading-relaxed">{corpo}</div>;
+  // Costruisce l'anteprima fino a LIMITE caratteri
+  let usati = 0;
+  const visibili: Seg[] = [];
+  if (aperto || !lungo) {
+    visibili.push(...segs);
+  } else {
+    for (const s of segs) {
+      if (usati >= LIMITE) break;
+      if (usati + s.testo.length <= LIMITE) {
+        visibili.push(s);
+        usati += s.testo.length;
+      } else {
+        const resto = LIMITE - usati;
+        visibili.push({ tipo: s.tipo, testo: s.testo.slice(0, resto).trimEnd() + "…" });
+        usati = LIMITE;
+        break;
+      }
+    }
   }
-
-  const visibili = aperto ? qa : qa.slice(0, 1);
 
   return (
     <div className="mt-5">
-      <div className="space-y-6">
-        {visibili.map((b, i) => (
-          <div key={i}>
-            <p className="font-display font-bold text-accento text-lg">{b.domanda}</p>
-            <div className="mt-2 space-y-3 leading-relaxed">
-              {b.risposta.map((p, j) => <p key={j}>{p}</p>)}
-            </div>
-          </div>
-        ))}
+      <div className="space-y-4">
+        {visibili.map((s, i) =>
+          s.tipo === "domanda" ? (
+            <p key={i} className="font-display font-bold text-accento text-lg">{s.testo}</p>
+          ) : (
+            <p key={i} className="leading-relaxed">{s.testo}</p>
+          )
+        )}
       </div>
-
-      {!aperto && (
-        <div className="relative -mt-16 pt-16 bg-gradient-to-t from-white via-white to-transparent" aria-hidden="true" />
+      {lungo && (
+        <button onClick={() => setAperto(!aperto)} className="btn btn-accento mt-5" aria-expanded={aperto}>
+          {aperto ? "↑ Chiudi" : "Leggi tutta l'intervista →"}
+        </button>
       )}
-
-      <button
-        onClick={() => setAperto(!aperto)}
-        className="btn btn-accento mt-6"
-        aria-expanded={aperto}
-      >
-        {aperto ? "↑ Chiudi l'intervista" : `Leggi tutta l'intervista (${qa.length} domande) →`}
-      </button>
     </div>
   );
 }
