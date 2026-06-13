@@ -30,12 +30,19 @@ function scaricaCsv(nome: string, righe: Record<string, unknown>[]) {
   a.click();
 }
 
-const dt = (s: string) => new Date(s).toLocaleString("it-IT", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" });
+const testo = (v: unknown) => String(v ?? "");
+const dataBreve = (s: string | null | undefined) => {
+  const d = s ? new Date(s) : null;
+  return d && !Number.isNaN(d.getTime()) ? d.toLocaleString("it-IT", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "-";
+};
 
 export default function Admin() {
   const [autenticato, setAutenticato] = useState(false);
+  const [verificaSessione, setVerificaSessione] = useState(true);
+  const [caricamento, setCaricamento] = useState(false);
   const [password, setPassword] = useState("");
   const [erroreLogin, setErroreLogin] = useState("");
+  const [erroreDati, setErroreDati] = useState("");
   const [tab, setTab] = useState<"persone" | "soci" | "storico" | "eventi" | "social" | "press" | "messaggi">("persone");
   const [press, setPress] = useState<any[]>([]);
   const [mostraFormPress, setMostraFormPress] = useState(false);
@@ -60,24 +67,51 @@ export default function Admin() {
   const [fAnnoP, setFAnnoP] = useState("tutti");
   const [fOrdine, setFOrdine] = useState("cognome");
 
-  async function carica() {
-    const [s, e, m, so, pr] = await Promise.all([
-      fetch("/api/admin/soci").then((r) => r.json()),
-      fetch("/api/admin/eventi").then((r) => r.json()),
-      fetch("/api/admin/messaggi").then((r) => r.json()),
-      fetch("/api/admin/social").then((r) => r.json()),
-      fetch("/api/admin/press").then((r) => r.json()),
-    ]);
-    if (s.error || e.error || m.error) { setAutenticato(false); return; }
-    setSoci(s.data ?? []);
-    setEventi(e.data ?? []);
-    setMessaggi(m.data ?? []);
-    setSocial(so.data ?? []);
-    setPress(pr.data ?? []);
-    setAutenticato(true);
+  async function leggiJson(res: Response, nome: string) {
+    let json: any = null;
+    try {
+      json = await res.json();
+    } catch {
+      throw new Error(`${nome}: risposta non valida dal server`);
+    }
+    if (!res.ok || json?.error) {
+      throw new Error(`${nome}: ${json?.error || `errore ${res.status}`}`);
+    }
+    return json;
   }
 
-  useEffect(() => { carica(); }, []);
+  async function carica(opzioni: { sessioneIniziale?: boolean } = {}) {
+    setCaricamento(true);
+    setErroreDati("");
+    try {
+      const [s, e, m, so, pr] = await Promise.all([
+        fetch("/api/admin/soci").then((r) => leggiJson(r, "Soci")),
+        fetch("/api/admin/eventi").then((r) => leggiJson(r, "Eventi")),
+        fetch("/api/admin/messaggi").then((r) => leggiJson(r, "Messaggi")),
+        fetch("/api/admin/social").then((r) => leggiJson(r, "Social")),
+        fetch("/api/admin/press").then((r) => leggiJson(r, "Press")),
+      ]);
+      setSoci(Array.isArray(s.data) ? s.data : []);
+      setEventi(Array.isArray(e.data) ? e.data : []);
+      setMessaggi(Array.isArray(m.data) ? m.data : []);
+      setSocial(Array.isArray(so.data) ? so.data : []);
+      setPress(Array.isArray(pr.data) ? pr.data : []);
+      setAutenticato(true);
+    } catch (err) {
+      const messaggio = err instanceof Error ? err.message : "Errore durante il caricamento";
+      if (opzioni.sessioneIniziale && messaggio.includes("Non autorizzato")) {
+        setAutenticato(false);
+      } else {
+        setErroreDati(messaggio);
+        if (messaggio.includes("Non autorizzato")) setAutenticato(false);
+      }
+    } finally {
+      setCaricamento(false);
+      if (opzioni.sessioneIniziale) setVerificaSessione(false);
+    }
+  }
+
+  useEffect(() => { carica({ sessioneIniziale: true }); }, []);
 
   async function login(ev: React.FormEvent) {
     ev.preventDefault();
@@ -226,6 +260,15 @@ export default function Admin() {
     carica();
   }
 
+  if (verificaSessione) {
+    return (
+      <div className="max-w-sm mx-auto px-4 py-24">
+        <h1 className="font-display font-black text-2xl text-accento mb-6">Cabina di guida</h1>
+        <p className="text-pietrisco font-mono">Controllo accesso...</p>
+      </div>
+    );
+  }
+
   if (!autenticato) {
     return (
       <div className="max-w-sm mx-auto px-4 py-24">
@@ -240,7 +283,10 @@ export default function Admin() {
             autoFocus
           />
           {erroreLogin && <p className="text-segnale font-semibold">{erroreLogin}</p>}
-          <button className="btn btn-accento w-full" type="submit">Entra</button>
+          {erroreDati && <p className="text-segnale font-semibold text-sm">{erroreDati}</p>}
+          <button className="btn btn-accento w-full" type="submit" disabled={caricamento}>
+            {caricamento ? "Carico..." : "Entra"}
+          </button>
         </form>
       </div>
     );
@@ -252,6 +298,16 @@ export default function Admin() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <h1 className="font-display font-black text-3xl text-accento mb-6">Cabina di guida</h1>
+
+      {erroreDati && (
+        <div className="border-2 border-segnale bg-white p-4 mb-6 text-sm">
+          <p className="font-display font-bold text-segnale">Qualcosa non sta caricando</p>
+          <p className="text-pietrisco mt-1">{erroreDati}</p>
+          <button className="btn btn-bordo text-xs mt-3" onClick={() => carica()} disabled={caricamento}>
+            Riprova
+          </button>
+        </div>
+      )}
 
       <div className="flex gap-2 mb-8 flex-wrap">
         {([
@@ -283,8 +339,8 @@ export default function Admin() {
           mappa.get(chiave)!.righe.push(r);
         }
         const dataIscrizione = (r: Socio) => {
-          const m = (r.note || "").match(/pagato (\d{4}-\d{2}-\d{2})/);
-          return m ? m[1] : r.created_at.slice(0, 10);
+          const m = (r.note || "").match(/(?:socio dal|pagato)\s+(\d{4}-\d{2}-\d{2})/i);
+          return m ? m[1] : testo(r.created_at).slice(0, 10);
         };
         const persone = Array.from(mappa.values()).map(({ chiave, righe }) => {
           const ordinate = [...righe].sort((a, b) => a.anno - b.anno || dataIscrizione(a).localeCompare(dataIscrizione(b)));
@@ -292,7 +348,7 @@ export default function Admin() {
           const inRegola = righe.some((r) => r.anno === annoCorrente && r.stato === "approvato");
           const anni = Array.from(new Set(righe.filter((r) => r.stato === "approvato").map((r) => r.anno))).sort();
           return { chiave, recente, inRegola, anni, da: dataIscrizione(ordinate[0]) };
-        }).sort((a, b) => `${a.recente.cognome} ${a.recente.nome}`.localeCompare(`${b.recente.cognome} ${b.recente.nome}`));
+        }).sort((a, b) => `${testo(a.recente.cognome)} ${testo(a.recente.nome)}`.localeCompare(`${testo(b.recente.cognome)} ${testo(b.recente.nome)}`));
 
         const filtrate = persone.filter((p) => {
           if (fAnnoP !== "tutti" && !p.anni.includes(Number(fAnnoP))) return false;
@@ -301,17 +357,17 @@ export default function Admin() {
           if (fTesto) {
             const t = fTesto.toLowerCase();
             const r = p.recente;
-            const blob = `${r.nome} ${r.cognome} ${r.email} ${r.codice_fiscale ?? ""} ${r.citta ?? ""} ${r.telefono ?? ""}`.toLowerCase();
+            const blob = `${testo(r.nome)} ${testo(r.cognome)} ${testo(r.email)} ${r.codice_fiscale ?? ""} ${r.citta ?? ""} ${r.telefono ?? ""}`.toLowerCase();
             if (!blob.includes(t)) return false;
           }
           return true;
         });
         const ordinata = [...filtrate].sort((a, b) => {
           const ra = a.recente, rb = b.recente;
-          if (fOrdine === "nome") return `${ra.nome} ${ra.cognome}`.localeCompare(`${rb.nome} ${rb.cognome}`);
-          if (fOrdine === "citta") return (ra.citta || "zzz").localeCompare(rb.citta || "zzz");
+          if (fOrdine === "nome") return `${testo(ra.nome)} ${testo(ra.cognome)}`.localeCompare(`${testo(rb.nome)} ${testo(rb.cognome)}`);
+          if (fOrdine === "citta") return testo(ra.citta || "zzz").localeCompare(testo(rb.citta || "zzz"));
           if (fOrdine === "data") return a.da.localeCompare(b.da); // prima iscrizione, dal più vecchio
-          return `${ra.cognome} ${ra.nome}`.localeCompare(`${rb.cognome} ${rb.nome}`); // cognome (default)
+          return `${testo(ra.cognome)} ${testo(ra.nome)}`.localeCompare(`${testo(rb.cognome)} ${testo(rb.nome)}`); // cognome (default)
         });
         const anniDisponibili = Array.from(new Set([2023, 2024, 2025, annoCorrente, ...soci.map((s) => s.anno)])).sort((a, b) => b - a);
 
@@ -389,7 +445,7 @@ export default function Admin() {
           if (fMetodo !== "tutti" && x.metodo_pagamento !== fMetodo) return false;
           if (fTesto) {
             const t = fTesto.toLowerCase();
-            const blob = `${x.nome} ${x.cognome} ${x.email} ${x.codice_fiscale ?? ""} ${x.citta ?? ""}`.toLowerCase();
+            const blob = `${testo(x.nome)} ${testo(x.cognome)} ${testo(x.email)} ${x.codice_fiscale ?? ""} ${x.citta ?? ""}`.toLowerCase();
             if (!blob.includes(t)) return false;
           }
           return true;
@@ -459,7 +515,7 @@ export default function Admin() {
                     <div>
                       <p className="font-display font-bold">
                         {s.nome} {s.cognome}{" "}
-                        <span className="text-xs font-mono text-pietrisco">· {s.tipo} {s.anno} · {dt(s.created_at)}</span>
+                        <span className="text-xs font-mono text-pietrisco">· {s.tipo} {s.anno} · {dataBreve(s.created_at)}</span>
                         {s.stato === "approvato" && <span className="ml-1 text-green-700 text-xs font-mono">✓ socio</span>}
                         {s.stato === "respinto" && <span className="ml-1 text-pietrisco text-xs font-mono">scartato</span>}
                       </p>
@@ -536,7 +592,7 @@ export default function Admin() {
         for (const s of soci) {
           const chiave = (s.codice_fiscale || s.email || `${s.nome}-${s.cognome}`).toLowerCase();
           if (!persone.has(chiave)) {
-            persone.set(chiave, { nome: `${s.nome} ${s.cognome}`, chiave, email: s.email, anni: new Map() });
+            persone.set(chiave, { nome: `${testo(s.nome)} ${testo(s.cognome)}`, chiave, email: testo(s.email), anni: new Map() });
           }
           const p = persone.get(chiave)!;
           const prec = p.anni.get(s.anno);
@@ -557,7 +613,7 @@ export default function Admin() {
               <summary className="font-display font-bold cursor-pointer">📥 Importa soci da CSV (anni passati)</summary>
               <div className="mt-3 space-y-3 text-sm">
                 <p className="text-pietrisco">
-                  Prima riga = intestazioni. Colonne riconosciute: <code className="font-mono">anno; nome; cognome; email; telefono; codice_fiscale; data_nascita; citta; metodo_pagamento; note</code>.
+                  Prima riga = intestazioni. Colonne riconosciute: <code className="font-mono">anno; nome; cognome; email; telefono; codice_fiscale; data_nascita; citta; metodo_pagamento; socio_dal; note</code>.
                   Obbligatorie solo <strong>anno, nome, cognome</strong>. Separatore ; o , — vengono salvate come approvate.
                 </p>
                 <div>
@@ -681,7 +737,7 @@ export default function Admin() {
                         {!e.pubblicato && <span className="text-xs bg-gray-200 px-1">BOZZA</span>}
                       </p>
                       <p className="text-sm text-pietrisco font-mono">
-                        {dt(e.data_inizio)} · {e.luogo ?? "—"} · {n} iscrittə
+                        {dataBreve(e.data_inizio)} · {e.luogo ?? "—"} · {n} iscrittə
                       </p>
                     </div>
                     <div className="flex gap-2 flex-wrap">
@@ -784,7 +840,7 @@ export default function Admin() {
               <div className="flex justify-between items-start gap-2">
                 <p className="font-display font-bold text-sm">
                   {m.nome || "Anonimə"} · <a href={`mailto:${m.email}`} className="text-accento underline">{m.email}</a>
-                  <span className="text-pietrisco font-mono font-normal text-xs"> · {dt(m.created_at)}</span>
+                  <span className="text-pietrisco font-mono font-normal text-xs"> · {dataBreve(m.created_at)}</span>
                 </p>
                 <button className="btn text-xs btn-bordo" onClick={() => segnaLetto(m.id, !m.letto)}>
                   {m.letto ? "Segna da leggere" : "Segna letto"}

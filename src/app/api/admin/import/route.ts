@@ -2,6 +2,17 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { isAdmin } from "@/lib/adminAuth";
 
+const DATA_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+function notaConSocioDal(note: unknown, socioDal: unknown) {
+  const parti: string[] = [];
+  const data = String(socioDal || "").trim();
+  if (DATA_ISO.test(data)) parti.push(`socio dal ${data}`);
+  const testo = String(note || "").trim();
+  if (testo) parti.push(testo);
+  return parti.join("; ") || "import storico";
+}
+
 // Import massivo di soci da CSV (anni passati): righe già parse-ate dal client
 export async function POST(req: Request) {
   if (!isAdmin()) return NextResponse.json({ error: "Non autorizzato" }, { status: 401 });
@@ -29,7 +40,7 @@ export async function POST(req: Request) {
       indirizzo: r.indirizzo || null,
       metodo_pagamento: r.metodo_pagamento === "bonifico" ? "bonifico" : r.metodo_pagamento === "paypal" ? "paypal" : null,
       stato: "approvato",
-      note: r.note || "import storico",
+      note: notaConSocioDal(r.note, r.socio_dal),
     }));
   const { error, count } = await supabaseAdmin()
     .from("soci")
