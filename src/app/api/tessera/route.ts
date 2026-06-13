@@ -8,9 +8,9 @@ type Riga = { nome: string; cognome: string; citta: string | null; email: string
 function chiave(r: Riga) {
   return (r.email || `${r.nome}-${r.cognome}`).toLowerCase().trim();
 }
-// data di prima iscrizione di una riga: usa "pagato YYYY-MM-DD" nelle note, altrimenti l'anno
+// data di prima iscrizione di una riga: usa "socio dal/pagato YYYY-MM-DD" nelle note, altrimenti l'anno
 function quando(r: Riga): string {
-  const m = (r.note || "").match(/pagato (\d{4}-\d{2}-\d{2})/);
+  const m = (r.note || "").match(/(?:socio dal|pagato)\s+(\d{4}-\d{2}-\d{2})/i);
   if (m) return m[1];
   return `${r.anno}-01-01`;
 }
@@ -50,7 +50,8 @@ export async function POST(req: Request) {
 
   // Verifico il richiedente
   const mie = approvate.filter((r) => r.email === email);
-  const dobOk = mie.some((r) => r.data_nascita === dob);
+  const dateNascitaRegistrate = mie.map((r) => r.data_nascita).filter(Boolean);
+  const dobOk = dateNascitaRegistrate.length === 0 || dateNascitaRegistrate.includes(dob);
   const inRegola = mie.some((r) => r.anno === annoCorrente);
 
   if (mie.length === 0 || !dobOk) {
@@ -61,7 +62,8 @@ export async function POST(req: Request) {
   }
 
   const recente = [...mie].sort((a, b) => b.anno - a.anno)[0];
-  const socioDal = Math.min(...mie.map((r) => r.anno));
+  const primaIscrizione = [...mie].map(quando).sort()[0];
+  const socioDal = Number(primaIscrizione?.slice(0, 4)) || Math.min(...mie.map((r) => r.anno));
   const citta = mie.map((r) => r.citta).filter(Boolean)[0] || "";
   const numero = progressivo.get(email) ?? 0;
 
