@@ -21,18 +21,18 @@ export default function Nav() {
 
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <nav className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16" aria-label="Principale">
-        <Link href="/" className="flex items-center gap-2 font-marchio font-extrabold text-2xl text-accento tracking-tight" onClick={() => setAperto(false)}>
+      <nav className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16 gap-3" aria-label="Principale">
+        <Link href="/" className="flex items-center gap-2 font-marchio font-extrabold text-xl lg:text-2xl text-accento tracking-tight whitespace-nowrap" onClick={() => setAperto(false)}>
           <img src="/immagini/logo-fvl.png" alt="" width={40} height={40} />
           FerroViaLibera
         </Link>
 
-        <ul className="hidden md:flex items-center gap-1">
+        <ul className="hidden md:flex items-center gap-0 lg:gap-1">
           {voci.map((v) => (
             <li key={v.href}>
               <Link
                 href={v.href}
-                className={`px-3 py-2 font-display font-semibold text-sm uppercase tracking-wide hover:text-accento ${path === v.href ? "text-accento border-b-2 border-accento" : "text-antracite"}`}
+                className={`px-2 lg:px-3 py-2 font-display font-semibold text-xs lg:text-sm uppercase tracking-wide whitespace-nowrap hover:text-accento ${path === v.href ? "text-accento border-b-2 border-accento" : "text-antracite"}`}
               >
                 {v.label}
               </Link>
