@@ -22,17 +22,17 @@ export default function Nav() {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
       <nav className="max-w-6xl mx-auto px-4 flex items-center justify-between h-16 gap-3" aria-label="Principale">
-        <Link href="/" className="flex items-center gap-2 font-marchio font-extrabold text-xl lg:text-2xl text-accento tracking-tight whitespace-nowrap" onClick={() => setAperto(false)}>
-          <img src="/immagini/logo-fvl.png" alt="" width={40} height={40} />
-          FerroViaLibera
+        <Link href="/" className="flex items-center gap-2 font-marchio font-extrabold text-2xl text-accento tracking-tight whitespace-nowrap shrink-0" onClick={() => setAperto(false)}>
+          <img src="/immagini/logo-fvl.png" alt="" width={40} height={40} className="shrink-0" />
+          <span className="hidden xl:inline">FerroViaLibera</span>
         </Link>
 
-        <ul className="hidden md:flex items-center gap-0 lg:gap-1">
+        <ul className="hidden lg:flex items-center gap-0 xl:gap-1">
           {voci.map((v) => (
             <li key={v.href}>
               <Link
                 href={v.href}
-                className={`px-2 lg:px-3 py-2 font-display font-semibold text-xs lg:text-sm uppercase tracking-wide whitespace-nowrap hover:text-accento ${path === v.href ? "text-accento border-b-2 border-accento" : "text-antracite"}`}
+                className={`px-2 xl:px-3 py-2 font-display font-semibold text-xs xl:text-sm uppercase tracking-wide whitespace-nowrap hover:text-accento ${path === v.href ? "text-accento border-b-2 border-accento" : "text-antracite"}`}
               >
                 {v.label}
               </Link>
@@ -44,7 +44,7 @@ export default function Nav() {
         </ul>
 
         <button
-          className="md:hidden p-2"
+          className="lg:hidden p-2"
           aria-expanded={aperto}
           aria-label={aperto ? "Chiudi menu" : "Apri menu"}
           onClick={() => setAperto(!aperto)}
@@ -56,7 +56,7 @@ export default function Nav() {
       </nav>
 
       {aperto && (
-        <ul className="md:hidden bg-white border-t border-gray-200 px-4 py-2">
+        <ul className="lg:hidden bg-white border-t border-gray-200 px-4 py-2">
           {voci.map((v) => (
             <li key={v.href}>
               <Link
