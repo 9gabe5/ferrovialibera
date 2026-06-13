@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { supabasePublic } from "@/lib/supabase";
+import Intervista from "@/components/Intervista";
 
 export const metadata = { title: "Press | FerroViaLibera", description: "Rassegna stampa e interviste su FerroViaLibera." };
 export const revalidate = 300;
@@ -70,7 +71,7 @@ export default async function PressPage() {
                   <p className="font-mono text-xs text-pietrisco uppercase tracking-wide">{dataIt(p.data_pubblicazione)}</p>
                   <h3 className="font-display font-black text-2xl text-accento mt-1">{p.titolo}</h3>
                   {p.estratto && <p className="mt-2 text-lg text-pietrisco italic">{p.estratto}</p>}
-                  {p.corpo && <div className="mt-4 prose-fvl whitespace-pre-line leading-relaxed">{p.corpo}</div>}
+                  {p.corpo && <Intervista corpo={p.corpo} />}
                 </article>
               ))}
             </div>
