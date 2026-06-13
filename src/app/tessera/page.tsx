@@ -11,7 +11,15 @@ export default function TesseraPage() {
   const [t, setT] = useState<Tessera | null>(null);
   const [walletAnim, setWalletAnim] = useState(false);
   const [logoData, setLogoData] = useState<string>("");
+  const [dob, setDob] = useState("");
   const cardRef = useRef<HTMLDivElement>(null);
+
+  function onDob(e: React.ChangeEvent<HTMLInputElement>) {
+    let v = e.target.value.replace(/\D/g, "").slice(0, 8);
+    if (v.length >= 5) v = `${v.slice(0, 2)}/${v.slice(2, 4)}/${v.slice(4)}`;
+    else if (v.length >= 3) v = `${v.slice(0, 2)}/${v.slice(2)}`;
+    setDob(v);
+  }
 
   // Carico il logo come dataURL così html-to-image lo cattura sempre
   useEffect(() => {
@@ -38,7 +46,7 @@ export default function TesseraPage() {
   async function cerca(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    const iso = parseData(String(f.get("data_nascita") || ""));
+    const iso = parseData(dob);
     if (!iso) {
       setErrore("Scrivi la data di nascita nel formato GG/MM/AAAA (es. 25/03/1990)");
       setStato("errore");
@@ -89,7 +97,7 @@ export default function TesseraPage() {
         <div className="max-w-6xl mx-auto px-4 py-12">
           <h1 className="text-4xl md:text-5xl">🎫 La mia tessera</h1>
           <p className="normal-case tracking-normal font-body font-normal text-antracite/70 mt-2">
-            Sei socə in regola? Trova e scarica la tua tessera digitale.
+            Sei già tesseratə? Trova e scarica la tua tessera digitale.
           </p>
         </div>
         <div className="filetto" aria-hidden="true" />
@@ -105,7 +113,7 @@ export default function TesseraPage() {
             </div>
             <div>
               <label className="label" htmlFor="t-dob">Data di nascita</label>
-              <input className="input" id="t-dob" name="data_nascita" type="text" inputMode="numeric" placeholder="GG/MM/AAAA" autoComplete="bday" required />
+              <input className="input" id="t-dob" name="data_nascita" type="text" inputMode="numeric" placeholder="GG/MM/AAAA" value={dob} onChange={onDob} maxLength={10} required />
               <p className="text-pietrisco text-xs mt-1">Scrivila così: giorno/mese/anno — es. 25/03/1990</p>
             </div>
             {stato === "errore" && <p className="text-segnale font-semibold" role="alert">{errore}</p>}
