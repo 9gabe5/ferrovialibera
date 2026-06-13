@@ -169,6 +169,7 @@ export default function TesseraPage() {
                     </div>
                     {t.citta && (
                       <div className="min-w-0">
+                        <div className="font-mono text-[10px] tracking-widest text-white/60">CITTÀ</div>
                         <div className="font-mono text-sm leading-tight break-words">{t.citta}</div>
                       </div>
                     )}
