@@ -5,8 +5,9 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        accento: "#C01C7C",
-        "accento-scuro": "#97135F",
+        accento: "#2F6E5E",
+        "accento-scuro": "#234E43",
+        pastello: "#DCEBE4",
         antracite: "#1C1E21",
         latte: "#FAFAF8",
         pietrisco: "#6B7280",

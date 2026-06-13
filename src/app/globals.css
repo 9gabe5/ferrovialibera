@@ -15,14 +15,14 @@ body {
 }
 .filetto-sottile { height: 3px; background: linear-gradient(90deg,#E40303,#FF8C00,#FFED00,#008026,#24408E,#732982); }
 
-/* Cartello di stazione */
+/* Cartello di stazione: pastello chiaro, testo scuro leggibile */
 .cartello {
-  @apply bg-accento text-white font-display font-bold uppercase tracking-wide;
+  @apply bg-pastello text-antracite font-display font-bold uppercase tracking-wide;
 }
 
 /* Focus visibile ovunque (accessibilità) */
 :focus-visible {
-  outline: 3px solid #C01C7C;
+  outline: 3px solid #2F6E5E;
   outline-offset: 2px;
 }
 

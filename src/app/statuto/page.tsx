@@ -6,7 +6,7 @@ export default function Statuto() {
       <section className="cartello">
         <div className="max-w-6xl mx-auto px-4 py-12">
           <h1 className="text-4xl md:text-5xl">Lo Statuto</h1>
-          <p className="normal-case tracking-normal font-body font-normal text-white/85 mt-2">
+          <p className="normal-case tracking-normal font-body font-normal text-antracite/70 mt-2">
             Il nostro orgoglio: lo abbiamo scritto insieme, per avere basi salde e durature.
           </p>
         </div>

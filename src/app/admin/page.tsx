@@ -36,7 +36,9 @@ export default function Admin() {
   const [autenticato, setAutenticato] = useState(false);
   const [password, setPassword] = useState("");
   const [erroreLogin, setErroreLogin] = useState("");
-  const [tab, setTab] = useState<"persone" | "soci" | "storico" | "eventi" | "messaggi">("persone");
+  const [tab, setTab] = useState<"persone" | "soci" | "storico" | "eventi" | "social" | "messaggi">("persone");
+  const [social, setSocial] = useState<{ id: string; url: string; ordine: number }[]>([]);
+  const [nuovoUrl, setNuovoUrl] = useState("");
   const [fSocio, setFSocio] = useState("tutti");
   const [csvTesto, setCsvTesto] = useState("");
   const [esitoImport, setEsitoImport] = useState("");
@@ -52,17 +54,21 @@ export default function Admin() {
   const [fStato, setFStato] = useState("tutti");
   const [fMetodo, setFMetodo] = useState("tutti");
   const [modificaId, setModificaId] = useState<string | null>(null);
+  const [mostraFormSocio, setMostraFormSocio] = useState(false);
+  const [fAnnoP, setFAnnoP] = useState("tutti");
 
   async function carica() {
-    const [s, e, m] = await Promise.all([
+    const [s, e, m, so] = await Promise.all([
       fetch("/api/admin/soci").then((r) => r.json()),
       fetch("/api/admin/eventi").then((r) => r.json()),
       fetch("/api/admin/messaggi").then((r) => r.json()),
+      fetch("/api/admin/social").then((r) => r.json()),
     ]);
     if (s.error || e.error || m.error) { setAutenticato(false); return; }
     setSoci(s.data ?? []);
     setEventi(e.data ?? []);
     setMessaggi(m.data ?? []);
+    setSocial(so.data ?? []);
     setAutenticato(true);
   }
 
@@ -96,6 +102,38 @@ export default function Admin() {
     });
     if (!res.ok) { alert("Errore nel salvataggio"); return; }
     setModificaId(null);
+    carica();
+  }
+
+  async function creaSocio(ev: React.FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    const f = new FormData(ev.currentTarget);
+    const res = await fetch("/api/admin/soci", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(Object.fromEntries(f.entries())),
+    });
+    const json = await res.json();
+    if (!res.ok) { alert("Errore: " + json.error); return; }
+    setMostraFormSocio(false);
+    carica();
+  }
+
+  async function eliminaSocio(id: string, nome: string) {
+    if (!confirm(`Eliminare definitivamente la scheda di ${nome}? L'azione non si può annullare.`)) return;
+    await fetch("/api/admin/soci", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
+    carica();
+  }
+
+  async function aggiungiSocial() {
+    const res = await fetch("/api/admin/social", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: nuovoUrl }) });
+    const json = await res.json();
+    if (!res.ok) { alert("Errore: " + json.error); return; }
+    setNuovoUrl("");
+    carica();
+  }
+  async function eliminaSocial(id: string) {
+    await fetch("/api/admin/social", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id }) });
     carica();
   }
 
@@ -201,6 +239,7 @@ export default function Admin() {
           ["soci", `Richieste ${inAttesa ? `(${inAttesa})` : ""}`],
           ["storico", "Storico"],
           ["eventi", "Eventi"],
+          ["social", "Social"],
           ["messaggi", `Messaggi ${nonLetti ? `(${nonLetti})` : ""}`],
         ] as const).map(([t, label]) => (
           <button
@@ -235,6 +274,7 @@ export default function Admin() {
         }).sort((a, b) => `${a.recente.cognome} ${a.recente.nome}`.localeCompare(`${b.recente.cognome} ${b.recente.nome}`));
 
         const filtrate = persone.filter((p) => {
+          if (fAnnoP !== "tutti" && !p.anni.includes(Number(fAnnoP))) return false;
           if (fSocio === "soci" && !p.inRegola) return false;
           if (fSocio === "non_soci" && p.inRegola) return false;
           if (fTesto) {
@@ -245,15 +285,20 @@ export default function Admin() {
           }
           return true;
         });
+        const anniDisponibili = Array.from(new Set([2023, 2024, 2025, annoCorrente, ...soci.map((s) => s.anno)])).sort((a, b) => b - a);
 
         const dataIt = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
 
         return (
           <section>
-            <div className="grid gap-2 sm:grid-cols-3 mb-4">
+            <div className="grid gap-2 sm:grid-cols-4 mb-4">
               <input className="input sm:col-span-2" placeholder="🔎 Cerca nome, email, CF, città…" value={fTesto} onChange={(e) => setFTesto(e.target.value)} />
+              <select className="input" value={fAnnoP} onChange={(e) => setFAnnoP(e.target.value)} aria-label="Filtra per anno">
+                <option value="tutti">Tutti gli anni</option>
+                {anniDisponibili.map((a) => <option key={a} value={String(a)}>Soci {a}</option>)}
+              </select>
               <select className="input" value={fSocio} onChange={(e) => setFSocio(e.target.value)} aria-label="Filtra soci">
-                <option value="tutti">Tutte le persone</option>
+                <option value="tutti">In regola e non</option>
                 <option value="soci">Solo soci {annoCorrente}</option>
                 <option value="non_soci">Solo non soci</option>
               </select>
@@ -337,8 +382,40 @@ export default function Admin() {
             </div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <p className="text-pietrisco text-sm">{filtrati.length} risultati su {soci.length} richieste</p>
-              <button className="btn btn-bordo text-xs" onClick={() => scaricaCsv("soci-ferrovialibera.csv", filtrati)}>Esporta CSV</button>
+              <div className="flex gap-2">
+                <button className="btn btn-accento text-xs" onClick={() => setMostraFormSocio(!mostraFormSocio)}>{mostraFormSocio ? "Annulla" : "+ Aggiungi socio"}</button>
+                <button className="btn btn-bordo text-xs" onClick={() => scaricaCsv("soci-ferrovialibera.csv", filtrati)}>Esporta CSV</button>
+              </div>
             </div>
+
+            {mostraFormSocio && (
+              <form onSubmit={creaSocio} className="border-2 border-accento bg-white p-5 mb-6 grid gap-3 sm:grid-cols-3 text-sm">
+                <p className="sm:col-span-3 font-display font-bold text-accento">Nuovo socio (inserimento manuale)</p>
+                <div><label className="label">Nome *</label><input className="input" name="nome" required /></div>
+                <div><label className="label">Cognome *</label><input className="input" name="cognome" required /></div>
+                <div><label className="label">Email</label><input className="input" name="email" type="email" /></div>
+                <div><label className="label">Telefono</label><input className="input" name="telefono" /></div>
+                <div><label className="label">Codice fiscale</label><input className="input uppercase" name="codice_fiscale" /></div>
+                <div><label className="label">Data di nascita</label><input className="input" name="data_nascita" type="date" /></div>
+                <div><label className="label">Città</label><input className="input" name="citta" /></div>
+                <div><label className="label">Indirizzo</label><input className="input" name="indirizzo" /></div>
+                <div><label className="label">Anno</label><input className="input" name="anno" type="number" defaultValue={new Date().getFullYear()} /></div>
+                <div>
+                  <label className="label">Tipo</label>
+                  <select className="input" name="tipo" defaultValue="nuovo"><option value="nuovo">nuovo</option><option value="rinnovo">rinnovo</option></select>
+                </div>
+                <div>
+                  <label className="label">Pagamento</label>
+                  <select className="input" name="metodo_pagamento" defaultValue=""><option value="">—</option><option value="paypal">paypal</option><option value="bonifico">bonifico</option></select>
+                </div>
+                <div>
+                  <label className="label">Stato</label>
+                  <select className="input" name="stato" defaultValue="approvato"><option value="approvato">approvato</option><option value="in_attesa">in attesa</option></select>
+                </div>
+                <div className="sm:col-span-3"><label className="label">Note</label><input className="input" name="note" /></div>
+                <button type="submit" className="btn btn-accento sm:col-span-3">Salva nuovo socio</button>
+              </form>
+            )}
             <div className="space-y-3">
               {filtrati.map((s) => (
                 <article key={s.id} className={`border-2 p-4 bg-white ${s.stato === "in_attesa" ? "border-yellow-500" : s.stato === "approvato" ? "border-green-600" : "border-gray-300 opacity-70"}`}>
@@ -365,6 +442,7 @@ export default function Admin() {
                         </>
                       )}
                       <button className="btn text-xs btn-bordo" aria-label={`Modifica ${s.nome} ${s.cognome}`} onClick={() => setModificaId(modificaId === s.id ? null : s.id)}>✏️</button>
+                      <button className="btn text-xs bg-segnale text-white" aria-label={`Elimina ${s.nome} ${s.cognome}`} onClick={() => eliminaSocio(s.id, `${s.nome} ${s.cognome}`)}>🗑</button>
                     </div>
                   </div>
 
@@ -603,6 +681,25 @@ export default function Admin() {
               );
             })}
           </div>
+        </section>
+      )}
+
+      {tab === "social" && (
+        <section>
+          <p className="text-pietrisco text-sm mb-3">Incolla il link di un post Instagram (es. https://www.instagram.com/p/XXXX/). Apparirà nella pagina <strong>Social</strong> del sito.</p>
+          <div className="flex gap-2 mb-6 flex-wrap">
+            <input className="input flex-1 min-w-[200px]" placeholder="https://www.instagram.com/p/…" value={nuovoUrl} onChange={(e) => setNuovoUrl(e.target.value)} />
+            <button className="btn btn-accento text-xs" onClick={aggiungiSocial}>Aggiungi</button>
+          </div>
+          <ul className="space-y-2">
+            {social.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-2 border border-gray-200 bg-white p-3 text-sm">
+                <a href={p.url} className="text-accento underline break-all">{p.url}</a>
+                <button className="btn text-xs bg-segnale text-white shrink-0" onClick={() => eliminaSocial(p.id)}>🗑</button>
+              </li>
+            ))}
+            {social.length === 0 && <li className="text-pietrisco font-mono">Nessun post ancora.</li>}
+          </ul>
         </section>
       )}
 

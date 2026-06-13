@@ -26,21 +26,21 @@ export default async function Home() {
       {/* HERO: cartello di stazione */}
       <section className="cartello">
         <div className="max-w-6xl mx-auto px-4 py-20 md:py-28">
-          <p className="font-mono text-sm normal-case tracking-normal text-white/70 mb-4">
+          <p className="font-mono text-sm normal-case tracking-normal text-antracite/60 mb-4">
             Associazione di Ferrovierə LGBTQ+ · dal Pride Month 2023
           </p>
           <h1 className="text-4xl md:text-6xl leading-tight">
             Per una ferrovia<br />libera da discriminazioni.
           </h1>
-          <p className="mt-6 max-w-2xl normal-case tracking-normal font-body font-normal text-white/85 text-lg">
+          <p className="mt-6 max-w-2xl normal-case tracking-normal font-body font-normal text-antracite/70 text-lg">
             Lavoriamo per un settore ferroviario pienamente inclusivo, dove ogni persona
             possa essere sé stessa — in cabina, in officina, in stazione e ovunque corra un binario.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/tesseramento" className="btn bg-white text-accento hover:bg-white/90">
+            <Link href="/tesseramento" className="btn btn-accento">
               Unisciti a noi
             </Link>
-            <Link href="/eventi" className="btn border-2 border-white text-white hover:bg-white hover:text-accento">
+            <Link href="/eventi" className="btn btn-bordo">
               Prossimi eventi
             </Link>
           </div>
@@ -51,7 +51,7 @@ export default async function Home() {
       {/* CHI SIAMO */}
       <section className="max-w-6xl mx-auto px-4 py-16 grid gap-10 md:grid-cols-2 items-center">
         <div>
-          <h2 className="font-display font-black text-3xl text-accento mb-4">Chi siamo</h2>
+          <h2 className="font-display font-black text-3xl text-accento mb-4">👋 Chi siamo</h2>
           <p className="text-lg leading-relaxed">
             Nel giugno del 2023, durante il Pride Month, FerroViaLibera è nata con l&apos;obiettivo
             di promuovere l&apos;uguaglianza e i diritti LGBTQ+ nel settore ferroviario. Attraverso
@@ -71,12 +71,32 @@ export default async function Home() {
         />
       </section>
 
+      {/* NUMERI */}
+      <section className="bg-pastello">
+        <div className="filetto-sottile" aria-hidden="true" />
+        <div className="max-w-6xl mx-auto px-4 py-10 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          {[
+            { e: "🌈", n: "dal 2023", t: "in viaggio insieme" },
+            { e: "🎫", n: "120+", t: "persone tesserate" },
+            { e: "🚂", n: "6", t: "progetti attivi" },
+            { e: "🗺️", n: "tutta Italia", t: "da nord a sud" },
+          ].map((x) => (
+            <div key={x.t}>
+              <div className="text-3xl" aria-hidden="true">{x.e}</div>
+              <div className="font-display font-black text-xl text-accento mt-1">{x.n}</div>
+              <div className="text-sm text-antracite/70">{x.t}</div>
+            </div>
+          ))}
+        </div>
+        <div className="filetto-sottile" aria-hidden="true" />
+      </section>
+
       {/* TABELLONE PARTENZE */}
       <section className="bg-antracite text-white py-16">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-baseline justify-between mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-1 mb-6">
             <h2 className="font-display font-black text-3xl">
-              Partenze <span className="text-yellow-400 font-mono text-xl align-middle">· Prossimi eventi</span>
+              🚉 Prossime partenze
             </h2>
             <Link href="/eventi" className="font-mono text-sm text-yellow-400 hover:underline">
               Tabellone completo →
@@ -105,7 +125,7 @@ export default async function Home() {
       {/* CTA TESSERAMENTO */}
       <section className="max-w-6xl mx-auto px-4 py-16 text-center">
         <h2 className="font-display font-black text-3xl md:text-4xl text-accento">
-          Unisciti alla nostra causa
+          💪 Unisciti alla nostra causa
         </h2>
         <p className="mt-3 text-lg text-pietrisco max-w-xl mx-auto">
           Cambiare il mondo in un luogo migliore inizia da noi stessi.

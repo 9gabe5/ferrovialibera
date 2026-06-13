@@ -33,5 +33,28 @@ export async function GET() {
     report.test_connessione = `ECCEZIONE: ${e?.message} ${e?.cause?.message ? "— causa: " + e.cause.message : ""}`;
   }
 
+  // Test invio email con Resend
+  const key = process.env.RESEND_API_KEY;
+  const dest = process.env.NOTIFICA_EMAIL;
+  const from = process.env.NOTIFICA_FROM || "FerroViaLibera <onboarding@resend.dev>";
+  report.notifica_from = from;
+  if (!key || !dest) {
+    report.test_email = "Salto: manca RESEND_API_KEY o NOTIFICA_EMAIL";
+  } else {
+    try {
+      const r = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ from, to: [dest], subject: "🚂 Test FerroViaLibera", text: "Se leggi questa email, le notifiche funzionano!" }),
+      });
+      const body = await r.json().catch(() => ({}));
+      report.test_email = r.ok
+        ? `OK: email di prova inviata a ${dest} (controlla anche lo spam)`
+        : `ERRORE ${r.status}: ${body?.message || JSON.stringify(body)}`;
+    } catch (e: any) {
+      report.test_email = `ECCEZIONE: ${e?.message}`;
+    }
+  }
+
   return NextResponse.json(report);
 }
