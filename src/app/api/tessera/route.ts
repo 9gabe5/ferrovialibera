@@ -1,14 +1,18 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase";
-import { createHash } from "crypto";
 
 export const dynamic = "force-dynamic";
 
-// Numero tessera deterministico dall'email
-function numeroTessera(email: string, anno: number) {
-  const h = createHash("sha256").update(email).digest("hex");
-  const n = (parseInt(h.slice(0, 6), 16) % 9000) + 1000;
-  return `FVL · ${anno} · ${n}`;
+type Riga = { nome: string; cognome: string; citta: string | null; email: string; anno: number; stato: string; data_nascita: string | null; note: string | null; created_at: string };
+
+function chiave(r: Riga) {
+  return (r.email || `${r.nome}-${r.cognome}`).toLowerCase().trim();
+}
+// data di prima iscrizione di una riga: usa "pagato YYYY-MM-DD" nelle note, altrimenti l'anno
+function quando(r: Riga): string {
+  const m = (r.note || "").match(/pagato (\d{4}-\d{2}-\d{2})/);
+  if (m) return m[1];
+  return `${r.anno}-01-01`;
 }
 
 export async function POST(req: Request) {
@@ -19,28 +23,47 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Inserisci email e data di nascita" }, { status: 400 });
   }
   const annoCorrente = new Date().getFullYear();
+
   const { data, error } = await supabaseAdmin()
     .from("soci")
-    .select("nome, cognome, citta, anno, stato, data_nascita, note, created_at")
-    .eq("email", email);
+    .select("nome, cognome, citta, email, anno, stato, data_nascita, note, created_at");
   if (error) return NextResponse.json({ error: "Errore di ricerca" }, { status: 500 });
 
-  const approvati = (data ?? []).filter((r) => r.stato === "approvato");
-  const dobOk = approvati.some((r) => r.data_nascita === dob);
-  const inRegola = approvati.some((r) => r.anno === annoCorrente);
+  const righe = (data ?? []) as Riga[];
+  const approvate = righe.filter((r) => r.stato === "approvato");
 
-  if (approvati.length === 0 || !dobOk) {
+  // Raggruppo per persona, calcolo la data di PRIMA iscrizione di ciascuna
+  const persone = new Map<string, { primaIscr: string; tiebreak: string }>();
+  for (const r of approvate) {
+    const k = chiave(r);
+    const q = quando(r);
+    const cur = persone.get(k);
+    if (!cur || q < cur.primaIscr) {
+      persone.set(k, { primaIscr: q, tiebreak: `${r.cognome} ${r.nome}`.toLowerCase() });
+    }
+  }
+  // Ordino per data di prima iscrizione (poi cognome), assegno il progressivo
+  const ordinate = Array.from(persone.entries())
+    .sort((a, b) => a[1].primaIscr.localeCompare(b[1].primaIscr) || a[1].tiebreak.localeCompare(b[1].tiebreak));
+  const progressivo = new Map<string, number>();
+  ordinate.forEach(([k], i) => progressivo.set(k, i + 1));
+
+  // Verifico il richiedente
+  const mie = approvate.filter((r) => r.email === email);
+  const dobOk = mie.some((r) => r.data_nascita === dob);
+  const inRegola = mie.some((r) => r.anno === annoCorrente);
+
+  if (mie.length === 0 || !dobOk) {
     return NextResponse.json({ error: "non_trovato" }, { status: 404 });
   }
   if (!inRegola) {
     return NextResponse.json({ error: "non_in_regola", anno: annoCorrente }, { status: 403 });
   }
 
-  // dati per la tessera
-  const recente = [...approvati].sort((a, b) => b.anno - a.anno)[0];
-  const anniApprovati = approvati.map((r) => r.anno);
-  const socioDal = Math.min(...anniApprovati);
-  const citta = approvati.map((r) => r.citta).filter(Boolean)[0] || "";
+  const recente = [...mie].sort((a, b) => b.anno - a.anno)[0];
+  const socioDal = Math.min(...mie.map((r) => r.anno));
+  const citta = mie.map((r) => r.citta).filter(Boolean)[0] || "";
+  const numero = progressivo.get(email) ?? 0;
 
   return NextResponse.json({
     nome: recente.nome,
@@ -48,6 +71,6 @@ export async function POST(req: Request) {
     citta,
     socio_dal: socioDal,
     anno: annoCorrente,
-    numero: numeroTessera(email, annoCorrente),
+    numero: `N° ${String(numero).padStart(3, "0")}`,
   });
 }

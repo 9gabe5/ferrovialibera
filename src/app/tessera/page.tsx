@@ -22,15 +22,34 @@ export default function TesseraPage() {
       .catch(() => {});
   }, []);
 
+  function parseData(s: string): string | null {
+    const t = s.trim().replace(/[.\-\s]/g, "/");
+    let m = t.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // GG/MM/AAAA
+    if (m) {
+      const [, g, me, a] = m;
+      const gg = g.padStart(2, "0"), mm = me.padStart(2, "0");
+      if (+gg >= 1 && +gg <= 31 && +mm >= 1 && +mm <= 12) return `${a}-${mm}-${gg}`;
+    }
+    m = t.match(/^(\d{4})\/(\d{2})\/(\d{2})$/); // AAAA/MM/GG
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+    return null;
+  }
+
   async function cerca(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const f = new FormData(e.currentTarget);
+    const iso = parseData(String(f.get("data_nascita") || ""));
+    if (!iso) {
+      setErrore("Scrivi la data di nascita nel formato GG/MM/AAAA (es. 25/03/1990)");
+      setStato("errore");
+      return;
+    }
     setStato("cerco");
     setErrore("");
-    const f = new FormData(e.currentTarget);
     const res = await fetch("/api/tessera", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: f.get("email"), data_nascita: f.get("data_nascita") }),
+      body: JSON.stringify({ email: f.get("email"), data_nascita: iso }),
     });
     const json = await res.json();
     if (res.ok) { setT(json); setStato("trovata"); return; }
@@ -86,7 +105,8 @@ export default function TesseraPage() {
             </div>
             <div>
               <label className="label" htmlFor="t-dob">Data di nascita</label>
-              <input className="input" id="t-dob" name="data_nascita" type="date" required />
+              <input className="input" id="t-dob" name="data_nascita" type="text" inputMode="numeric" placeholder="GG/MM/AAAA" autoComplete="bday" required />
+              <p className="text-pietrisco text-xs mt-1">Scrivila così: giorno/mese/anno — es. 25/03/1990</p>
             </div>
             {stato === "errore" && <p className="text-segnale font-semibold" role="alert">{errore}</p>}
             <button className="btn btn-accento" type="submit" disabled={stato === "cerco"}>
@@ -110,7 +130,7 @@ export default function TesseraPage() {
                   </div>
                   <div className="mt-6">
                     <div className="font-mono text-[10px] tracking-widest text-white/60">SOCIO / SOCIA</div>
-                    <div className="font-display font-black text-2xl text-white leading-tight">{t.nome} {t.cognome}</div>
+                    <div className="font-display font-black text-2xl text-white leading-tight break-words">{t.nome} {t.cognome}</div>
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-2 text-white/90">
                     <div>
@@ -118,9 +138,9 @@ export default function TesseraPage() {
                       <div className="font-mono">{t.socio_dal}</div>
                     </div>
                     {t.citta && (
-                      <div>
+                      <div className="min-w-0">
                         <div className="font-mono text-[10px] tracking-widest text-white/60">CITTÀ</div>
-                        <div className="font-mono truncate">{t.citta}</div>
+                        <div className="font-mono text-sm leading-tight break-words">{t.citta}</div>
                       </div>
                     )}
                   </div>
