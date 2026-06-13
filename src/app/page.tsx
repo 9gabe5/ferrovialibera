@@ -27,7 +27,7 @@ export default async function Home() {
       <section className="cartello">
         <div className="max-w-6xl mx-auto px-4 py-20 md:py-28">
           <p className="font-mono text-sm normal-case tracking-normal text-antracite/60 mb-4">
-            Associazione di Ferrovierə LGBTQ+ · dal Pride Month 2023
+            Associazione di personale ferroviario · fondata nel 2023
           </p>
           <h1 className="text-4xl md:text-6xl leading-tight">
             Per una ferrovia<br />libera da discriminazioni.
