@@ -58,6 +58,7 @@ export default function Admin() {
   const [modificaId, setModificaId] = useState<string | null>(null);
   const [mostraFormSocio, setMostraFormSocio] = useState(false);
   const [fAnnoP, setFAnnoP] = useState("tutti");
+  const [fOrdine, setFOrdine] = useState("cognome");
 
   async function carica() {
     const [s, e, m, so, pr] = await Promise.all([
@@ -305,23 +306,38 @@ export default function Admin() {
           }
           return true;
         });
+        const ordinata = [...filtrate].sort((a, b) => {
+          const ra = a.recente, rb = b.recente;
+          if (fOrdine === "nome") return `${ra.nome} ${ra.cognome}`.localeCompare(`${rb.nome} ${rb.cognome}`);
+          if (fOrdine === "citta") return (ra.citta || "zzz").localeCompare(rb.citta || "zzz");
+          if (fOrdine === "data") return a.da.localeCompare(b.da); // prima iscrizione, dal più vecchio
+          return `${ra.cognome} ${ra.nome}`.localeCompare(`${rb.cognome} ${rb.nome}`); // cognome (default)
+        });
         const anniDisponibili = Array.from(new Set([2023, 2024, 2025, annoCorrente, ...soci.map((s) => s.anno)])).sort((a, b) => b - a);
 
         const dataIt = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" });
 
         return (
           <section>
-            <div className="grid gap-2 sm:grid-cols-4 mb-4">
+            <div className="grid gap-2 sm:grid-cols-2 mb-4">
               <input className="input sm:col-span-2" placeholder="🔎 Cerca nome, email, CF, città…" value={fTesto} onChange={(e) => setFTesto(e.target.value)} />
-              <select className="input" value={fAnnoP} onChange={(e) => setFAnnoP(e.target.value)} aria-label="Filtra per anno">
-                <option value="tutti">Tutti gli anni</option>
-                {anniDisponibili.map((a) => <option key={a} value={String(a)}>Soci {a}</option>)}
+              <select className="input" value={fOrdine} onChange={(e) => setFOrdine(e.target.value)} aria-label="Ordina per">
+                <option value="cognome">Ordina per cognome</option>
+                <option value="nome">Ordina per nome</option>
+                <option value="data">Ordina per data di tesseramento</option>
+                <option value="citta">Ordina per città</option>
               </select>
-              <select className="input" value={fSocio} onChange={(e) => setFSocio(e.target.value)} aria-label="Filtra soci">
-                <option value="tutti">In regola e non</option>
-                <option value="soci">Solo soci {annoCorrente}</option>
-                <option value="non_soci">Solo non soci</option>
-              </select>
+              <div className="grid grid-cols-2 gap-2">
+                <select className="input" value={fAnnoP} onChange={(e) => setFAnnoP(e.target.value)} aria-label="Filtra per anno">
+                  <option value="tutti">Tutti gli anni</option>
+                  {anniDisponibili.map((a) => <option key={a} value={String(a)}>Soci {a}</option>)}
+                </select>
+                <select className="input" value={fSocio} onChange={(e) => setFSocio(e.target.value)} aria-label="Filtra soci">
+                  <option value="tutti">In regola e non</option>
+                  <option value="soci">Solo soci {annoCorrente}</option>
+                  <option value="non_soci">Solo non soci</option>
+                </select>
+              </div>
             </div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2">
               <p className="text-pietrisco text-sm">
@@ -334,7 +350,7 @@ export default function Admin() {
               })))}>Esporta CSV</button>
             </div>
             <div className="space-y-3">
-              {filtrate.map((p) => {
+              {ordinata.map((p) => {
                 const r = p.recente;
                 return (
                   <article key={p.chiave} className={`border-2 p-4 bg-white ${p.inRegola ? "border-green-600" : "border-red-400"}`}>
@@ -359,7 +375,7 @@ export default function Admin() {
                   </article>
                 );
               })}
-              {filtrate.length === 0 && <p className="text-pietrisco font-mono">Nessuna persona trovata.</p>}
+              {ordinata.length === 0 && <p className="text-pietrisco font-mono">Nessuna persona trovata.</p>}
             </div>
           </section>
         );
