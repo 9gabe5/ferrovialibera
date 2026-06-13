@@ -339,7 +339,7 @@ export default function Admin() {
           mappa.get(chiave)!.righe.push(r);
         }
         const dataIscrizione = (r: Socio) => {
-          const m = (r.note || "").match(/pagato (\d{4}-\d{2}-\d{2})/);
+          const m = (r.note || "").match(/(?:socio dal|pagato)\s+(\d{4}-\d{2}-\d{2})/i);
           return m ? m[1] : testo(r.created_at).slice(0, 10);
         };
         const persone = Array.from(mappa.values()).map(({ chiave, righe }) => {
@@ -613,7 +613,7 @@ export default function Admin() {
               <summary className="font-display font-bold cursor-pointer">📥 Importa soci da CSV (anni passati)</summary>
               <div className="mt-3 space-y-3 text-sm">
                 <p className="text-pietrisco">
-                  Prima riga = intestazioni. Colonne riconosciute: <code className="font-mono">anno; nome; cognome; email; telefono; codice_fiscale; data_nascita; citta; metodo_pagamento; note</code>.
+                  Prima riga = intestazioni. Colonne riconosciute: <code className="font-mono">anno; nome; cognome; email; telefono; codice_fiscale; data_nascita; citta; metodo_pagamento; socio_dal; note</code>.
                   Obbligatorie solo <strong>anno, nome, cognome</strong>. Separatore ; o , — vengono salvate come approvate.
                 </p>
                 <div>
