@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { supabasePublic } from "@/lib/supabase";
 import Intervista from "@/components/Intervista";
+import VideoYouTube from "@/components/VideoYouTube";
 
 export const metadata = { title: "Press | FerroViaLibera", description: "Rassegna stampa e interviste su FerroViaLibera." };
 export const revalidate = 300;
@@ -78,15 +79,7 @@ export default async function PressPage() {
                 return (
                   <div key={p.id}>
                     {id ? (
-                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
-                        <iframe
-                          className="absolute inset-0 w-full h-full border-4 border-accento"
-                          src={`https://www.youtube-nocookie.com/embed/${id}`}
-                          title={p.titolo}
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        />
-                      </div>
+                      <VideoYouTube id={id} titolo={p.titolo} />
                     ) : (
                       <a href={p.url ?? "#"} className="text-accento underline">{p.titolo}</a>
                     )}

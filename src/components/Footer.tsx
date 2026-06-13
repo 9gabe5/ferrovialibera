@@ -38,7 +38,7 @@ export default function Footer() {
         </div>
         <div className="border-t border-gray-700">
           <p className="max-w-6xl mx-auto px-4 py-4 text-xs text-gray-400">
-            © {new Date().getFullYear()} FerroViaLibera APS · Sito realizzato in casa, senza piattaforme terze 🏳️‍🌈
+            © {new Date().getFullYear()} FerroViaLibera APS · <Link href="/privacy" className="underline hover:text-white">Privacy</Link> · <Link href="/cookie" className="underline hover:text-white">Cookie</Link> · Sito realizzato in casa, senza piattaforme terze 🏳️‍🌈
           </p>
         </div>
       </div>

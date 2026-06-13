@@ -14,7 +14,7 @@ const config: Config = {
         segnale: "#C8311F",
       },
       fontFamily: {
-        marchio: ["'Bricolage Grotesque'", "system-ui", "sans-serif"],
+        marchio: ["'Bricolage Grotesque Variable'", "'Bricolage Grotesque'", "system-ui", "sans-serif"],
         display: ["Archivo", "system-ui", "sans-serif"],
         body: ["'Albert Sans'", "system-ui", "sans-serif"],
         mono: ["'IBM Plex Mono'", "monospace"],
