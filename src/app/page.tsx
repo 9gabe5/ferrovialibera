@@ -45,7 +45,30 @@ export default async function Home() {
             </Link>
           </div>
         </div>
-        <div className="binario-treno" aria-hidden="true"><span className="treno">🚄</span></div>
+        <div className="binario-treno" aria-hidden="true">
+          <span className="treno">
+            <svg width="44" height="26" viewBox="0 0 44 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* musetto a sinistra, corpo treno */}
+              <path d="M3 17 L3 11 Q3 6 9 5 L40 5 Q43 5 43 8 L43 17 Z" fill="#2F6E5E" stroke="#234E43" strokeWidth="1.2"/>
+              <path d="M3 11 Q3 6 9 5 L13 5 L9 12 L3 12 Z" fill="#234E43"/>
+              {/* finestrino frontale */}
+              <path d="M5 11 Q5.5 7.5 9.5 7 L12 7 L9.2 11 Z" fill="#DCEBE4"/>
+              {/* finestrini */}
+              <rect x="16" y="7.5" width="6" height="5" rx="1" fill="#DCEBE4"/>
+              <rect x="24" y="7.5" width="6" height="5" rx="1" fill="#DCEBE4"/>
+              <rect x="32" y="7.5" width="6" height="5" rx="1" fill="#DCEBE4"/>
+              {/* fascia arcobaleno */}
+              <rect x="3" y="14.5" width="40" height="2.2" fill="#FF8C00"/>
+              {/* ruote */}
+              <circle cx="11" cy="19" r="3" fill="#1C1E21"/>
+              <circle cx="11" cy="19" r="1.1" fill="#6B7280"/>
+              <circle cx="33" cy="19" r="3" fill="#1C1E21"/>
+              <circle cx="33" cy="19" r="1.1" fill="#6B7280"/>
+              {/* faro */}
+              <circle cx="4.5" cy="13" r="1" fill="#FFED00"/>
+            </svg>
+          </span>
+        </div>
       </section>
 
       {/* CHI SIAMO */}

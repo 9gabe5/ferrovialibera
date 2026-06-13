@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
 import { jsPDF } from "jspdf";
 
@@ -10,7 +10,17 @@ export default function TesseraPage() {
   const [errore, setErrore] = useState("");
   const [t, setT] = useState<Tessera | null>(null);
   const [walletAnim, setWalletAnim] = useState(false);
+  const [logoData, setLogoData] = useState<string>("");
   const cardRef = useRef<HTMLDivElement>(null);
+
+  // Carico il logo come dataURL così html-to-image lo cattura sempre
+  useEffect(() => {
+    fetch("/immagini/logo-fvl.png")
+      .then((r) => r.blob())
+      .then((b) => new Promise<string>((res) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result)); fr.readAsDataURL(b); }))
+      .then(setLogoData)
+      .catch(() => {});
+  }, []);
 
   async function cerca(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -92,7 +102,7 @@ export default function TesseraPage() {
                 <div className="tessera-flap" aria-hidden="true" />
                 <div className="tessera-corpo">
                   <div className="flex items-center justify-between">
-                    <img src="/immagini/logo.png" alt="" width={52} height={52} />
+                    {logoData && <img src={logoData} alt="" width={52} height={52} />}
                     <div className="text-right">
                       <div className="font-mono text-[10px] tracking-widest text-white/60">TESSERA SOCIO</div>
                       <div className="font-display font-black text-2xl text-white leading-none">{t.anno}</div>

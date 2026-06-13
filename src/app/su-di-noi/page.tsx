@@ -1,7 +1,7 @@
 export const metadata = { title: "Su di noi | FerroViaLibera" };
 
 // Quando hai i file, basta incollare qui l'URL (o il percorso /immagini/...)
-const LOGO_NUOVO: string | null = "/immagini/logo.png";
+const LOGO_NUOVO: string | null = "/immagini/logo-fvl.png";
 
 const direttivo: { nome: string; ruolo: string; foto: string | null }[] = [
   { nome: "Gabriele Roscini", ruolo: "Presidente e Fondatore", foto: "/immagini/gabriele.jpg" },

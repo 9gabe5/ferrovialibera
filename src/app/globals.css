@@ -76,7 +76,7 @@ body {
 /* Trenino che passa sul binario arcobaleno */
 .binario-treno { position: relative; height: 4px; background: linear-gradient(90deg,#E40303,#FF8C00,#FFED00,#008026,#24408E,#732982); }
 .binario-treno .treno {
-  position: absolute; top: -15px; font-size: 22px; line-height: 1;
+  position: absolute; top: -22px; line-height: 0;
   animation: corsa 16s linear infinite;
   will-change: left;
 }
