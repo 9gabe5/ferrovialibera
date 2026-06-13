@@ -733,7 +733,7 @@ export default function Admin() {
             <form onSubmit={creaPress} className="border-2 border-accento bg-white p-5 mb-6 grid gap-3 sm:grid-cols-2 text-sm">
               <div>
                 <label className="label">Tipo</label>
-                <select className="input" name="tipo" defaultValue="articolo"><option value="articolo">Articolo (rassegna stampa)</option><option value="intervista">Intervista (testo sul sito)</option></select>
+                <select className="input" name="tipo" defaultValue="articolo"><option value="articolo">Articolo (rassegna stampa)</option><option value="intervista">Intervista (testo sul sito)</option><option value="video">Video (YouTube)</option></select>
               </div>
               <div><label className="label">Data</label><input className="input" name="data_pubblicazione" type="date" /></div>
               <div className="sm:col-span-2"><label className="label">Titolo *</label><input className="input" name="titolo" required /></div>

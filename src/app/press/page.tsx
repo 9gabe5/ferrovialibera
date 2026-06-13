@@ -22,10 +22,17 @@ async function carica(): Promise<Press[]> {
 
 const dataIt = (iso: string | null) => iso ? new Date(iso + "T12:00:00").toLocaleDateString("it-IT", { day: "numeric", month: "long", year: "numeric" }) : "";
 
+function youtubeId(url: string | null): string | null {
+  if (!url) return null;
+  const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/);
+  return m ? m[1] : null;
+}
+
 export default async function PressPage() {
   const tutti = await carica();
   const articoli = tutti.filter((p) => p.tipo === "articolo");
   const interviste = tutti.filter((p) => p.tipo === "intervista");
+  const video = tutti.filter((p) => p.tipo === "video");
 
   return (
     <>
@@ -60,6 +67,36 @@ export default async function PressPage() {
               </a>
             ))}
           </div>
+        )}
+
+        {video.length > 0 && (
+          <>
+            <h2 className="font-display font-black text-2xl text-accento mt-14 mb-6">🎥 Video</h2>
+            <div className="grid gap-8 md:grid-cols-2">
+              {video.map((p) => {
+                const id = youtubeId(p.url);
+                return (
+                  <div key={p.id}>
+                    {id ? (
+                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+                        <iframe
+                          className="absolute inset-0 w-full h-full border-4 border-accento"
+                          src={`https://www.youtube-nocookie.com/embed/${id}`}
+                          title={p.titolo}
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : (
+                      <a href={p.url ?? "#"} className="text-accento underline">{p.titolo}</a>
+                    )}
+                    <h3 className="font-display font-bold text-lg mt-3">{p.titolo}</h3>
+                    {p.estratto && <p className="text-pietrisco text-sm mt-1">{p.estratto}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {interviste.length > 0 && (
