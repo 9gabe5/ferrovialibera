@@ -68,27 +68,49 @@ export default function TesseraPage() {
   }
 
   async function scaricaPng() {
-    if (!cardRef.current) return;
-    const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
+    const dataUrl = await immagineTessera();
+    if (!dataUrl) return;
     const a = document.createElement("a");
     a.download = `tessera-ferrovialibera-${t?.cognome?.toLowerCase() || "socio"}.png`;
     a.href = dataUrl;
     a.click();
   }
 
-  async function scaricaPdf() {
+  async function immagineTessera() {
+    if (!cardRef.current) return;
+    await document.fonts?.ready;
+    await Promise.all(
+      Array.from(cardRef.current.querySelectorAll("img")).map((img) => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise<void>((resolve) => {
+          img.onload = () => resolve();
+          img.onerror = () => resolve();
+        });
+      }),
+    );
+    return toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
+  }
+
+  function salvaPdf(dataUrl: string) {
     if (!cardRef.current) return;
     const w = cardRef.current.offsetWidth;
     const h = cardRef.current.offsetHeight;
-    const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
     const pdf = new jsPDF({ orientation: w >= h ? "landscape" : "portrait", unit: "px", format: [w, h] });
     pdf.addImage(dataUrl, "PNG", 0, 0, w, h);
     pdf.save(`tessera-ferrovialibera-${t?.cognome?.toLowerCase() || "socio"}.pdf`);
   }
 
+  async function scaricaPdf() {
+    const dataUrl = await immagineTessera();
+    if (!dataUrl) return;
+    salvaPdf(dataUrl);
+  }
+
   async function scaricaConAnimazione() {
+    const dataUrl = await immagineTessera();
+    if (!dataUrl) return;
     setWalletAnim(true);
-    setTimeout(() => { scaricaPdf(); setWalletAnim(false); }, 1100);
+    setTimeout(() => { salvaPdf(dataUrl); setWalletAnim(false); }, 1100);
   }
 
   return (
@@ -130,9 +152,9 @@ export default function TesseraPage() {
                 <div className="tessera-flap" aria-hidden="true" />
                 <div className="tessera-corpo">
                   <div className="flex items-center justify-between">
-                    {logoData && <img src={logoData} alt="" width={52} height={52} />}
+                    {logoData && <img src={logoData} alt="" width={52} height={52} decoding="sync" />}
                     <div className="text-right">
-                      <div className="font-mono text-[10px] tracking-widest text-white/60">TESSERA SOCIO</div>
+                      <div className="font-mono text-[10px] tracking-widest text-white/60">TESSERA ANNO ASSOCIATIVO:</div>
                       <div className="font-display font-black text-2xl text-white leading-none">{t.anno}</div>
                     </div>
                   </div>
@@ -142,12 +164,11 @@ export default function TesseraPage() {
                   </div>
                   <div className="mt-4 grid grid-cols-2 gap-2 text-white/90">
                     <div>
-                      <div className="font-mono text-[10px] tracking-widest text-white/60">SOCIO DAL</div>
+                      <div className="font-mono text-[10px] tracking-widest text-white/60">ISCRIZIONE EFFETTUATA NELL&apos;ANNO:</div>
                       <div className="font-mono">{t.socio_dal}</div>
                     </div>
                     {t.citta && (
                       <div className="min-w-0">
-                        <div className="font-mono text-[10px] tracking-widest text-white/60">CITTÀ</div>
                         <div className="font-mono text-sm leading-tight break-words">{t.citta}</div>
                       </div>
                     )}
@@ -162,8 +183,8 @@ export default function TesseraPage() {
             </div>
 
             <div className="flex gap-3 mt-8 flex-wrap justify-center">
-              <button className="btn btn-accento" onClick={scaricaConAnimazione}>⬇ Scarica tessera (PDF)</button>
-              <button className="btn btn-bordo" onClick={scaricaPng}>🖼 Salva immagine (PNG)</button>
+              <button className="btn btn-accento" onClick={scaricaConAnimazione} disabled={!logoData}>⬇ Scarica tessera (PDF)</button>
+              <button className="btn btn-bordo" onClick={scaricaPng} disabled={!logoData}>🖼 Salva immagine (PNG)</button>
             </div>
             <p className="text-pietrisco text-sm mt-4 text-center max-w-sm">
               Salvala nei File o nelle Foto del telefono e mostrala ai raduni per farti riconoscere! 🚂
