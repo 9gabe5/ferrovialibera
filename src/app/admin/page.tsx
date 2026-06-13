@@ -365,7 +365,7 @@ export default function Admin() {
         const ordinata = [...filtrate].sort((a, b) => {
           const ra = a.recente, rb = b.recente;
           if (fOrdine === "nome") return `${testo(ra.nome)} ${testo(ra.cognome)}`.localeCompare(`${testo(rb.nome)} ${testo(rb.cognome)}`);
-          if (fOrdine === "citta") return testo(ra.citta || "zzz").localeCompare(texto(rb.citta || "zzz"));
+          if (fOrdine === "citta") return testo(ra.citta || "zzz").localeCompare(testo(rb.citta || "zzz"));
           if (fOrdine === "data") return a.da.localeCompare(b.da); // prima iscrizione, dal più vecchio
           return `${testo(ra.cognome)} ${testo(ra.nome)}`.localeCompare(`${testo(rb.cognome)} ${testo(rb.nome)}`); // cognome (default)
         });
